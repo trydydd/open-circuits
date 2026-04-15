@@ -33,12 +33,14 @@ REPO_ROOT = OVERLAY_DIR.parent
 TEMPLATES_DIR = OVERLAY_DIR / "templates"
 CSS_SRC = OVERLAY_DIR / "css"
 JS_SRC = OVERLAY_DIR / "js"
+FONTS_SRC = OVERLAY_DIR / "fonts"
 
 # Tokens resolved in header/footer templates
 TEMPLATE_KEYS = [
     "INDEX_PATH",
     "VOL_DC", "VOL_AC", "VOL_SEMI", "VOL_DIGITAL", "VOL_REF", "VOL_EXPER",
     "LICENSE_PATH", "ATTRIBUTION_PATH",
+    "JS_PATH",
 ]
 
 
@@ -55,6 +57,7 @@ def resolve_paths(depth: int) -> dict[str, str]:
         "VOL_EXPER":        f"{p}Exper/EXPER_1.html",
         "LICENSE_PATH":     f"{p}LICENSE.txt",
         "ATTRIBUTION_PATH": f"{p}ATTRIBUTION.md",
+        "JS_PATH":          f"{p}js/",
     }
 
 
@@ -69,19 +72,28 @@ def inject_file(src: Path, dst: Path, depth: int) -> None:
     """Read src, inject overlay elements, write to dst."""
     subs = resolve_paths(depth)
     css_href = f"{'../' * depth}css/open-circuits.css"
+    js_href  = f"{'../' * depth}js/navigation.js"
     css_link = f'<link rel="stylesheet" href="{css_href}">'
+    js_tag   = f'<script src="{js_href}" defer></script>'
     header_html = render_template(TEMPLATES_DIR / "header.html", subs)
     footer_html = render_template(TEMPLATES_DIR / "footer.html", subs)
 
     content = src.read_text(encoding="utf-8", errors="replace")
 
-    # Insert CSS link before </head> (case-insensitive)
+    # Insert CSS link + JS script before </head> (case-insensitive)
     content, n = re.subn(
-        r"(</head>)", f"{css_link}\n\\1", content, count=1, flags=re.IGNORECASE
+        r"(</head>)", f"{css_link}\n{js_tag}\n\\1", content, count=1, flags=re.IGNORECASE
     )
     if n == 0:
         # No </head> — prepend to file as fallback
-        content = f"{css_link}\n{content}"
+        content = f"{css_link}\n{js_tag}\n{content}"
+
+    # Strip inline style/bgcolor from <body> tag so our CSS theme isn't overridden
+    content = re.sub(
+        r"(<body)([^>]*)(>)",
+        lambda m: m.group(1) + re.sub(r'\s*(?:style|bgcolor)\s*=\s*(?:"[^"]*"|\'[^\']*\'|\S+)', '', m.group(2), flags=re.IGNORECASE) + m.group(3),
+        content, count=1, flags=re.IGNORECASE
+    )
 
     # Inject header after opening <body ...> tag
     content, n = re.subn(
@@ -190,6 +202,14 @@ def main() -> None:
         shutil.copytree(JS_SRC, dst_js, dirs_exist_ok=True,
                         ignore=shutil.ignore_patterns(".gitkeep"))
         print(f"Copied JS → {dst_js}/")
+
+    font_files = [f for f in FONTS_SRC.iterdir()
+                  if f.name != ".gitkeep"] if FONTS_SRC.is_dir() else []
+    if font_files:
+        dst_fonts = output_dir / "fonts"
+        shutil.copytree(FONTS_SRC, dst_fonts, dirs_exist_ok=True,
+                        ignore=shutil.ignore_patterns(".gitkeep"))
+        print(f"Copied fonts → {dst_fonts}/")
 
     for fname in ["LICENSE.txt", "ATTRIBUTION.md"]:
         src_file = REPO_ROOT / fname
