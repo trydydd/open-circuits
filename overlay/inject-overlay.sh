@@ -193,19 +193,24 @@ for f in LICENSE-DSL.txt ATTRIBUTION.md; do
     fi
 done
 
-# ---- Validate: no external URLs outside attribution footer ----------------
+# ---- Validate: no external resource URLs outside attribution footer -------
+#
+# Only checks resource-loading elements (<link href>, <script src>) for
+# external URLs — NOT plain <a href> hyperlinks. This prevents false positives
+# from Kuphaldt's in-text hyperlinks while still catching any CDN/external
+# dependency accidentally introduced by the overlay assets.
 
-echo "Validating output for external URLs..."
+echo "Validating output for external resource URLs..."
 
-# Collect any http:// or https:// occurrences that are NOT inside .oc-footer
 EXTERNAL_VIOLATIONS=()
 
 while IFS= read -r -d '' html_file; do
-    # Extract lines outside .oc-footer that contain http(s)://
-    # Strategy: use awk to skip content between <footer class="oc-footer"> and </footer>
     violations="$(awk '
         /<footer[^>]*oc-footer/ { in_footer=1 }
-        !in_footer && /https?:\/\// { print FILENAME ":" NR ": " $0 }
+        !in_footer && (/<link[^>]+href=["\x27]https?:\/\// || \
+                        /<script[^>]+src=["\x27]https?:\/\//) {
+            print FILENAME ":" NR ": " $0
+        }
         /<\/footer>/ { in_footer=0 }
     ' "${html_file}")"
 
@@ -215,12 +220,11 @@ while IFS= read -r -d '' html_file; do
 done < <(find "${OUTPUT_DIR}" -name "*.html" -print0 | sort -z)
 
 if [[ ${#EXTERNAL_VIOLATIONS[@]} -gt 0 ]]; then
-    echo "WARNING: External URLs found outside .oc-footer in output HTML:" >&2
+    echo "ERROR: External resource URLs found in output HTML:" >&2
     printf '%s\n' "${EXTERNAL_VIOLATIONS[@]}" >&2
-    echo "Review the above — upstream content may contain external links." >&2
-    # Exit non-zero per spec
+    echo "The overlay must not introduce external <link> or <script> dependencies." >&2
     exit 1
 fi
 
-echo "Validation passed: no external URLs outside attribution footer."
+echo "Validation passed: no external resource URLs in output."
 echo "Done."
