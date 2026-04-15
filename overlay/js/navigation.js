@@ -222,6 +222,16 @@
   function init() {
     var nav      = extractChapterNav();
     var tocItems = buildTocItems();
+
+    // No useful content — hide the toggle and leave the sidebar closed
+    var hasContent = tocItems.length > 0 || nav.prev || nav.next || nav.index;
+    if (!hasContent) {
+      var toggle = document.getElementById(TOGGLE_ID);
+      if (toggle) toggle.hidden = true;
+      document.body.classList.add('sidebar-closed');
+      return;
+    }
+
     renderSidebar(tocItems, nav);
     renderBottomNav(nav);
     hideImageNav();
