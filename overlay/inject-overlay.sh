@@ -89,7 +89,7 @@ inject_file() {
     local dig_path="${prefix}Digital/DIGI_1.html"
     local ref_path="${prefix}Ref/REF_1.html"
     local exp_path="${prefix}Exper/EXPER_1.html"
-    local license_path="${prefix}LICENSE-DSL.txt"
+    local license_path="${prefix}LICENSE.txt"
     local attr_path="${prefix}ATTRIBUTION.md"
     local css_href="${prefix}css/open-circuits.css"
 
@@ -186,7 +186,7 @@ if [[ -d "${JS_SRC}" ]] && [[ -n "$(find "${JS_SRC}" -mindepth 1 -maxdepth 1 -no
 fi
 
 # Copy LICENSE and ATTRIBUTION to output root so relative links work
-for f in LICENSE-DSL.txt ATTRIBUTION.md; do
+for f in LICENSE.txt ATTRIBUTION.md; do
     src="${REPO_ROOT}/${f}"
     if [[ -f "${src}" ]]; then
         cp "${src}" "${OUTPUT_DIR}/${f}"
