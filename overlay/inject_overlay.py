@@ -148,16 +148,35 @@ def main() -> None:
 
     # ── Process HTML files ────────────────────────────────────────────────────
 
-    html_files = sorted(input_dir.rglob("*.html"))
+    html_files = sorted(
+        f for ext in ("*.html", "*.htm") for f in input_dir.rglob(ext)
+    )
     for src in html_files:
         rel = src.relative_to(input_dir)
+        # Normalise .htm → .html in output
+        if rel.suffix.lower() == ".htm":
+            rel = rel.with_suffix(".html")
         dst = output_dir / rel
         depth = len(rel.parts) - 1
         inject_file(src, dst, depth)
 
     print(f"Processed {len(html_files)} HTML page(s) → {output_dir}")
 
-    # ── Copy static assets ────────────────────────────────────────────────────
+    # ── Copy upstream non-HTML assets (images, etc.) ─────────────────────────
+
+    html_suffixes = {".html", ".htm"}
+    asset_files = [
+        f for f in input_dir.rglob("*")
+        if f.is_file() and f.suffix.lower() not in html_suffixes
+    ]
+    for src in asset_files:
+        dst = output_dir / src.relative_to(input_dir)
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dst)
+
+    print(f"Copied {len(asset_files)} asset file(s) → {output_dir}")
+
+    # ── Copy overlay static assets ────────────────────────────────────────────
 
     if CSS_SRC.is_dir():
         dst_css = output_dir / "css"
