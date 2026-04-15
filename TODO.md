@@ -8,35 +8,35 @@
 ## Phase 1: Foundation
 *Repo scaffolding, legal files, and project documentation stubs.*
 
-- [ ] Create directory structure with `.gitkeep` placeholders:
+- [x] Create directory structure with `.gitkeep` placeholders:
   `upstream/`, `build/`, `overlay/css/`, `overlay/js/`, `overlay/templates/`,
   `zim-metadata/`, `output/`, `.github/workflows/`, `docs/`
-- [ ] Add `LICENSE-DSL.txt` — full text of the Design Science License
+- [x] Add `LICENSE-DSL.txt` — full text of the Design Science License
   (source: https://www.ibiblio.org/kuphaldt/electricCircuits/Devel/dsl.html)
-- [ ] Add `ATTRIBUTION.md` — credits Kuphaldt, describes what was modified and when;
+- [x] Add `ATTRIBUTION.md` — credits Kuphaldt, describes what was modified and when;
   must satisfy DSL Section 4 (new name, authorship, modification notice)
-- [ ] Add `README.md` — project overview, build prerequisites, quick-start instructions,
+- [x] Add `README.md` — project overview, build prerequisites, quick-start instructions,
   license notice
-- [ ] Add `upstream/UPSTREAM-VERSION.txt` — placeholder noting snapshot date/URL to be
+- [x] Add `upstream/UPSTREAM-VERSION.txt` — placeholder noting snapshot date/URL to be
   filled in by `download-source.sh`
-- [ ] Add `output/.gitignore` — ignore all built artifacts under `output/`
-- [ ] Commit: "chore: scaffold repo structure and legal files"
+- [x] Add `output/.gitignore` — ignore all built artifacts under `output/`
+- [x] Commit: "chore: scaffold repo structure and legal files"
 
 ---
 
 ## Phase 2: Download Pipeline
 *Script to fetch Kuphaldt's pre-built HTML bundle from ibiblio.*
 
-- [ ] Write `build/download-source.sh`:
+- [x] Write `build/download-source.sh`:
   - Download `liechtml.tar.gz` from `https://www.ibiblio.org/kuphaldt/electricCircuits/`
   - Extract to `upstream/html/`
   - Write snapshot date and source URL to `upstream/UPSTREAM-VERSION.txt`
   - Be idempotent: skip download if `upstream/html/` already populated (with `--force` flag to re-download)
   - Exit non-zero on download failure
-- [ ] Make the script executable (`chmod +x`)
-- [ ] Test locally: run script, verify `upstream/html/` contains volume subdirectories
+- [x] Make the script executable (`chmod +x`)
+- [x] Test locally: run script, verify `upstream/html/` contains volume subdirectories
   (`DC/`, `AC/`, `Semi/`, `Digital/`, `Ref/`, `Exper/`)
-- [ ] Commit: "feat: add download-source.sh"
+- [x] Commit: "feat: add download-source.sh"
 
 ---
 
@@ -54,10 +54,9 @@
   - Inter-volume navigation links (DC | AC | Semiconductors | Digital | Reference | Experiments)
   - Link back to index
 - [ ] Write `overlay/templates/footer.html`:
-  - Required DSL attribution notice:
-    `Based on "Lessons in Electric Circuits" by Tony R. Kuphaldt. Converted and restyled
-    by the Hearth project, [year]. Published under the Design Science License.`
-  - Link to `LICENSE-DSL.txt` and `ATTRIBUTION.md`
+  - Small "License & Attribution" link pointing to `LICENSE-DSL.txt` and `ATTRIBUTION.md`
+  - No need to repeat the full attribution text on every page (full notice lives on
+    the root `index.html` and in `ATTRIBUTION.md`)
 - [ ] Commit: "feat: add CSS overlay and header/footer templates"
 
 ---
@@ -136,7 +135,7 @@
   - Install `zimwriterfs` if available in CI image, or skip ZIM step
   - Run `build/build-all.sh`
   - Verify: no external URLs in `output/html/` (grep check)
-  - Verify: attribution notice present in `output/html/DC/DC_1.html` (or equivalent)
+  - Verify: attribution notice present in `output/html/index.html`
   - Upload `output/html/` as a build artifact for inspection
 - [ ] Write `.github/workflows/pages.yml` (runs on push to `main`):
   - Run `build/build-html.sh`
@@ -195,8 +194,8 @@
 - [ ] Open `output/html/` in a browser — spot-check all six volumes load correctly
 - [ ] Verify self-contained: `grep -r 'http' output/html/ | grep -v 'attribution\|LICENSE\|ibiblio'`
   should return empty
-- [ ] Verify attribution present on every page:
-  `grep -rL 'Design Science License' output/html/**/*.html` should return empty
+- [ ] Verify attribution present on root index:
+  `grep -l 'Design Science License' output/html/index.html` should match
 - [ ] Verify URL path stability: confirm `DC/DC_1.html`, `AC/AC_1.html`, etc. exist
   at the expected paths
 - [ ] (Optional) Test ZIM: `kiwix-serve output/open-circuits.zim` and browse in browser
