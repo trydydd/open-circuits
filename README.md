@@ -25,40 +25,47 @@ with Kiwix.
 
 ## Build Prerequisites
 
-- `curl` or `wget` — to download the upstream HTML bundle
-- `sed` — standard UNIX text processing (used by inject-overlay.sh)
-- `bash` — version 4 or later
+- **Python 3.9+** — the only required system dependency
 - `zimwriterfs` — optional, required only for ZIM packaging
   (from [openzim/zim-tools](https://github.com/openzim/zim-tools))
 
-All build output is self-contained — no Node.js, no Python, no CDN dependencies
-at runtime.
+All Python dependencies (BeautifulSoup, pytest) are installed in a local
+`.venv/` — no system-level packages needed. Built output is self-contained
+with no CDN dependencies at runtime.
 
 ---
 
 ## Quick Start
 
 ```bash
-# 1. Download and extract the upstream HTML
-bash build/download-source.sh
+# 1. Create the venv and install dependencies
+make install
 
-# 2. Build the HTML site with CSS overlay and navigation
-bash build/build-html.sh
+# 2. Download upstream HTML, inject overlay, verify integrity
+make build
 
-# 3. (Optional) Build a ZIM file for Kiwix
-bash build/build-zim.sh
-
-# 4. Or run the full pipeline
-bash build/build-all.sh
+# 3. Open the result
+open output/html/index.html
 ```
 
-Output is written to `output/html/`. Open `output/html/index.html` in a
-browser to view the result.
+Or step by step:
+
+```bash
+make download   # fetch upstream/html/ from ibiblio
+make inject     # produce output/html/ with CSS + nav injected
+make verify     # confirm no text was changed
+```
 
 To re-download the upstream source (e.g. after an upstream update):
 
 ```bash
-bash build/download-source.sh --force
+.venv/bin/python build/download_source.py --force
+```
+
+To run the test suite:
+
+```bash
+make test
 ```
 
 ---
@@ -86,25 +93,33 @@ open-circuits/
 ├── LICENSE.txt              # Creative Commons Attribution 4.0 (CC BY 4.0)
 ├── ATTRIBUTION.md           # Credits, modification log, CC BY 4.0 compliance
 ├── README.md                # This file
+├── pyproject.toml           # Project metadata
+├── requirements.txt         # Runtime Python dependencies
+├── requirements-dev.txt     # Dev/test dependencies
+├── Makefile                 # Convenience targets (install, build, test, …)
 │
 ├── upstream/                # Downloaded at build time (not committed)
 │   └── UPSTREAM-VERSION.txt # Records snapshot date and source URL
 │
 ├── build/
-│   ├── download-source.sh   # Fetches HTML bundle from ibiblio
-│   ├── build-html.sh        # Injects overlay, produces output/html/
-│   ├── build-zim.sh         # Packages into .zim for Kiwix
-│   └── build-all.sh         # Full pipeline + release tarball
+│   ├── download_source.py        # Fetches HTML bundle from ibiblio
+│   ├── verify_content_integrity.py  # Checks output text matches upstream
+│   ├── build-html.sh             # (Phase 5) Orchestration — not yet written
+│   ├── build-zim.sh              # (Phase 6) ZIM packaging — not yet written
+│   └── build-all.sh              # (Phase 5) Full pipeline — not yet written
 │
 ├── overlay/
 │   ├── css/open-circuits.css         # Readability CSS overlay
 │   ├── js/navigation.js              # Optional sidebar TOC (v1.1)
 │   ├── templates/header.html         # Navigation banner, injected at top
 │   ├── templates/footer.html         # Attribution notice, injected at bottom
-│   └── inject-overlay.sh             # Injects header/footer/CSS into HTML
+│   └── inject_overlay.py             # Injects header/footer/CSS into HTML
 │
 ├── zim-metadata/            # Metadata for ZIM packaging
 ├── output/                  # Built artifacts — gitignored
+├── tests/
+│   ├── conftest.py          # Pytest session fixtures (download + inject)
+│   └── test_integration.py  # End-to-end integration tests
 ├── .github/workflows/       # CI, Pages deployment, release automation
 └── docs/                    # Detailed build and integration docs
 ```
