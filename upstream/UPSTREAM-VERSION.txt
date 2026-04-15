@@ -1,16 +1,6 @@
 # Upstream Source Version
+# Written by build/download-source.sh — do not edit manually.
 
-This file records the snapshot of Kuphaldt's pre-built HTML bundle used
-in the current build. It is written by build/download-source.sh each time
-the upstream source is downloaded.
-
----
-
-SOURCE_URL=
-SNAPSHOT_DATE=
+SOURCE_URL=https://www.ibiblio.org/kuphaldt/electricCircuits/liechtml.tar.gz
+SNAPSHOT_DATE=2026-04-15
 TARBALL=liechtml.tar.gz
-
----
-
-To update, run:
-  bash build/download-source.sh --force
