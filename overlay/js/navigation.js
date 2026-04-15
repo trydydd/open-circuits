@@ -14,7 +14,6 @@
   var SIDEBAR_ID   = 'oc-sidebar';
   var TOGGLE_ID    = 'oc-nav-toggle';
   var SCRIM_ID     = 'oc-sidebar-scrim';
-  var STORAGE_KEY  = 'oc-sidebar-open';
   var MOBILE_BREAK = 769;
 
   /* ── 1. Extract Kuphaldt prev/next/index from image nav links ─────────── */
@@ -199,14 +198,10 @@
     function setOpen(open) {
       document.body.classList.toggle('sidebar-closed', !open);
       toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-      try { localStorage.setItem(STORAGE_KEY, open ? 'true' : 'false'); } catch (e) {}
     }
 
-    // Restore saved preference; default: open on desktop, closed on mobile
-    var saved;
-    try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) {}
-    var initialOpen = (saved !== null) ? (saved === 'true') : isDesktop();
-    setOpen(initialOpen);
+    // Default: open on desktop, closed on mobile
+    setOpen(isDesktop());
 
     toggle.addEventListener('click', function () {
       var isOpen = !document.body.classList.contains('sidebar-closed');
