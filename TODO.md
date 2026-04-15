@@ -147,23 +147,23 @@
 ## Phase 8: Documentation
 *Detailed docs for contributors and Hearth integration.*
 
-- [ ] Write `docs/BUILDING.md`:
+- [x] Write `docs/BUILDING.md`:
   - Prerequisites (`python3`, `make`, `curl`, `zimwriterfs`)
   - Step-by-step local build instructions
   - How to test the output (open in browser, check with `kiwix-serve`)
   - How to add or update the overlay CSS
-- [ ] Write `docs/CONVERSION-NOTES.md`:
+- [x] Write `docs/CONVERSION-NOTES.md`:
   - Why Option A (pre-built HTML) was chosen over SubML conversion
   - Notes on the upstream HTML structure (volume dirs, file naming conventions)
   - Known quirks of Kuphaldt's HTML that affect injection
   - Future path toward Option B (SubML → modern HTML) if desired
-- [ ] Write `docs/HEARTH-INTEGRATION.md`:
+- [x] Write `docs/HEARTH-INTEGRATION.md`:
   - How the Hearth ansible role consumes release artifacts
   - nginx path convention: `/circuits/DC/DC_1.html` etc.
   - ZIM mode: where to place the `.zim` file in Hearth
   - URL stability contract (paths must not change across versions)
   - How `salvage-electronics` links into this content
-- [ ] Commit: "docs: add BUILDING, CONVERSION-NOTES, and HEARTH-INTEGRATION"
+- [x] Commit: "docs: add BUILDING, CONVERSION-NOTES, and HEARTH-INTEGRATION"
 
 ---
 
