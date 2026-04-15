@@ -50,12 +50,12 @@ def main() -> None:
     # ── Check zimwriterfs ─────────────────────────────────────────────────────
 
     if not shutil.which("zimwriterfs"):
-        print("Error: zimwriterfs not found.", file=sys.stderr)
-        print("Install it with one of:", file=sys.stderr)
-        print("  Ubuntu/Debian : sudo apt install zimwriterfs", file=sys.stderr)
-        print("  macOS         : brew install kiwix-tools", file=sys.stderr)
-        print("  Manual        : https://github.com/openzim/zim-tools", file=sys.stderr)
-        sys.exit(1)
+        print("zimwriterfs not found — skipping ZIM build.")
+        print("Install it with one of:")
+        print("  Ubuntu/Debian : sudo apt install zimwriterfs")
+        print("  macOS         : brew install kiwix-tools")
+        print("  Manual        : https://github.com/openzim/zim-tools")
+        sys.exit(0)
 
     # ── Check prerequisites ───────────────────────────────────────────────────
 
