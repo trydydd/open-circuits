@@ -9,8 +9,9 @@ This project converts Tony R. Kuphaldt's *Lessons in Electric Circuits* — a
 six-volume open-licensed electronics textbook — into modern, portable formats
 suitable for offline deployment.
 
-The source text is published under the **Design Science License** (DSL) and
-has been freely available at `ibiblio.org` since 2000. It covers DC circuits,
+The source text is published under the **Creative Commons Attribution 4.0
+International** license (CC BY 4.0) and has been freely available at
+`ibiblio.org` since 2000. It covers DC circuits,
 AC circuits, semiconductors, digital logic, reference tables, and experiments.
 It is comprehensive, well-written, and used in college curricula.
 
@@ -26,8 +27,8 @@ salvage" resource for the **Hearth** offline community hub project:
 
 | Repo | Content | License |
 |------|---------|---------|
-| **`open-circuits`** (this repo) | Kuphaldt's text converted to modern formats | Design Science License (required by upstream) |
-| **`salvage-electronics`** (separate repo) | Original pathway content: salvage techniques, component testing, donor device guides | CC-BY-SA (our choice — DSL aggregation clause keeps it independent) |
+| **`open-circuits`** (this repo) | Kuphaldt's text converted to modern formats | CC BY 4.0 (same as upstream) |
+| **`salvage-electronics`** (separate repo) | Original pathway content: salvage techniques, component testing, donor device guides | CC-BY-SA (our choice — compatible with CC BY 4.0 upstream) |
 | **`hearth`** (platform repo) | Consumes release artifacts from both repos above, serves via nginx or Kiwix | MIT |
 
 The `salvage-electronics` pathway links into `open-circuits` for deep theory
@@ -72,58 +73,61 @@ SubML toolchain at all.
 
 ---
 
-## License Compliance (Design Science License)
+## License Compliance (Creative Commons Attribution 4.0)
 
-The DSL is a copyleft license. Full text:
-https://www.ibiblio.org/kuphaldt/electricCircuits/Devel/dsl.html
+The upstream work is published under CC BY 4.0 — a permissive attribution
+license with no copyleft/share-alike requirement. Full license text:
+https://creativecommons.org/licenses/by/4.0/legalcode
 
 ### Requirements for Our Use Case
 
-**We are creating a derivative work** (restyled/reformatted HTML), so
-Section 4 (Modification) applies:
+**We are creating a derivative work** (restyled/reformatted HTML), so the
+CC BY 4.0 attribution requirements apply:
 
-1. **The derivative must be published under the DSL.** — The entire
-   `open-circuits` repo and all its outputs are under the DSL.
+1. **Credit the creator.** — Original material is attributed to Tony R.
+   Kuphaldt throughout: in ATTRIBUTION.md, the footer of every page, and
+   the README.
 
-2. **The derivative must have a new name** that cannot be confused with the
-   original. — Our name is **"Open Circuits — A Portable Electronics
-   Reference"**, clearly distinct from "Lessons in Electric Circuits."
+2. **Include the copyright notice.** — © 2000–2023 Tony R. Kuphaldt is
+   preserved and reproduced in ATTRIBUTION.md and LICENSE.txt.
 
-3. **Appropriate authorship credit must be given.** Original material remains
-   attributed to Tony R. Kuphaldt. Modifications (conversion, restyling,
-   navigation) are attributed to the Hearth project. Every page and the
-   README must include a notice indicating the nature and dates of
-   modifications.
+3. **Include the license notice.** — LICENSE.txt in the repo and in every
+   built distribution. A "CC BY 4.0" link in the footer of every page.
 
-4. **Source Data must be available.** Either included in the distribution or
-   available at a publicly-accessible URL. The GitHub repo itself satisfies
-   this — it contains all source files needed to reproduce the output.
+4. **Indicate changes were made.** — ATTRIBUTION.md and the page footer
+   describe the nature of modifications (CSS overlay, navigation injection,
+   packaging) and credit the Hearth project.
 
-### Aggregation Clause (Important)
-The DSL explicitly states: *"The aggregation of the Work with other works
-which are not based on the Work does not bring the other works in the scope
-of the License."* This means the `salvage-electronics` repo (original content)
-can use any license, even when bundled alongside this content in a Hearth
-deployment.
+5. **No new name required.** — CC BY 4.0 does not require renaming
+   derivative works. We retain "Open Circuits — A Portable Electronics
+   Reference" as a distinct title, but this is not a compliance obligation.
+
+6. **No ShareAlike requirement.** — CC BY 4.0 is not copyleft. Downstream
+   users of this project are not obligated to use the same license.
+
+### Compatibility with Companion Repos
+CC BY 4.0 imposes no restrictions on what licenses companion repos may use.
+The `salvage-electronics` repo (original content, CC-BY-SA) and `hearth`
+(MIT) can be bundled alongside this content without license conflict.
 
 ### Required Files in Repo
-- `LICENSE-DSL.txt` — Full text of the Design Science License
-- `ATTRIBUTION.md` — Credits Kuphaldt, describes what was modified and when
+- `LICENSE.txt` — CC BY 4.0 license with copyright notice
+- `ATTRIBUTION.md` — Credits Kuphaldt, describes modifications, copyright
 
 ### Required Attribution Notice
-DSL Section 4(c) requires "appropriate notice included with the new work" — not
-a notice on every page. The following satisfies this requirement:
+CC BY 4.0 requires "appropriate credit" in any distribution. The following
+satisfies this:
 
-- `ATTRIBUTION.md` present in the repo and distribution (already required above)
-- `LICENSE-DSL.txt` present in the repo and distribution (already required above)
+- `ATTRIBUTION.md` present in the repo and distribution (see above)
+- `LICENSE.txt` present in the repo and distribution (see above)
 - Attribution notice on the root `index.html` of the built site:
   ```
   Based on "Lessons in Electric Circuits" by Tony R. Kuphaldt.
   Converted and restyled by the Hearth project, [year].
-  Published under the Design Science License.
+  Published under CC BY 4.0.
   ```
-- A small "License & Attribution" link in the footer of every page pointing to
-  `ATTRIBUTION.md` and `LICENSE-DSL.txt` — no need to repeat the full notice text.
+- A "CC BY 4.0" link in the footer of every page pointing to `LICENSE.txt`
+  and `ATTRIBUTION.md`.
 
 ---
 
@@ -194,7 +198,7 @@ No CDN references, no external requests.
 
 ```
 open-circuits/
-├── LICENSE-DSL.txt                 # Full Design Science License text
+├── LICENSE.txt                     # Creative Commons Attribution 4.0 (CC BY 4.0)
 ├── ATTRIBUTION.md                  # Credits, modification log
 ├── README.md                       # Project overview, build instructions
 │
@@ -420,13 +424,13 @@ For reference when building navigation and linking from `salvage-electronics`:
 
 | Decision | Rationale |
 |----------|-----------|
-| Separate repo from salvage-electronics | Clean license separation — DSL can't infect CC-BY-SA content |
+| Separate repo from salvage-electronics | Clean separation — independently useful and deployable |
 | Separate repo from hearth | Independently useful; deployable on GitHub Pages for the world |
 | Start with pre-built HTML, not SubML conversion | Lower risk, faster first release; iterate toward deeper conversion |
 | Pin upstream snapshot, don't track | Text is frozen since ~2010; no upstream to track |
 | Self-contained output (no CDN) | Hard requirement for offline/Hearth deployment |
 | ZIM output as a deliverable | No existing ZIM for this text; contribution to global Kiwix commons |
-| CSS overlay rather than full retheme | Minimal modification reduces DSL compliance surface; still improves UX |
+| CSS overlay rather than full retheme | Minimal modification, clear indication of changes per CC BY 4.0; still improves UX |
 | Stable URL paths matching original structure | Enables reliable deep linking from salvage-electronics pathway |
 
 ---
@@ -459,7 +463,7 @@ For reference when building navigation and linking from `salvage-electronics`:
 ## Getting Started (For Claude Code)
 
 1. Create the repo structure above.
-2. Write the README, LICENSE-DSL.txt, and ATTRIBUTION.md.
+2. Write the README, LICENSE.txt (CC BY 4.0), and ATTRIBUTION.md.
 3. Write `download-source.sh` — fetch and extract the pre-built HTML bundle.
 4. Write `inject-overlay.sh` — add header, footer, and CSS to each page.
 5. Create a minimal `open-circuits.css` that improves readability without

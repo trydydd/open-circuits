@@ -83,8 +83,8 @@ Exper/EXPER_1.html — Volume VI (Experiments)
 
 ```
 open-circuits/
-├── LICENSE-DSL.txt          # Full Design Science License text
-├── ATTRIBUTION.md           # Credits, modification log, DSL compliance
+├── LICENSE.txt              # Creative Commons Attribution 4.0 (CC BY 4.0)
+├── ATTRIBUTION.md           # Credits, modification log, CC BY 4.0 compliance
 ├── README.md                # This file
 │
 ├── upstream/                # Downloaded at build time (not committed)
@@ -113,15 +113,13 @@ open-circuits/
 
 ## License
 
-This project is a derivative work published under the **Design Science License**
-(DSL), the same license as the original.
+The original text is copyright Tony R. Kuphaldt (© 2000–2023) and published
+under the **Creative Commons Attribution 4.0 International** license (CC BY 4.0).
+This derivative work is published under the same license.
 
 > Based on "Lessons in Electric Circuits" by Tony R. Kuphaldt.
 > Converted and restyled by the Hearth project, 2026.
-> Published under the Design Science License.
+> Published under CC BY 4.0.
 
-See `LICENSE-DSL.txt` for the full license text and `ATTRIBUTION.md` for
+See `LICENSE.txt` for the full license text and `ATTRIBUTION.md` for
 complete credits and modification notices.
-
-The original text is copyright Tony R. Kuphaldt.
-Modifications (CSS, navigation, build tooling) are copyright the Hearth project.

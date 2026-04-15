@@ -78,12 +78,13 @@ teardown_file() {
     [ -d "${REPO_ROOT}/docs" ]
 }
 
-@test "phase1: LICENSE-DSL.txt is non-empty" {
-    [ -s "${REPO_ROOT}/LICENSE-DSL.txt" ]
+@test "phase1: LICENSE.txt is non-empty" {
+    [ -s "${REPO_ROOT}/LICENSE.txt" ]
 }
 
-@test "phase1: LICENSE-DSL.txt contains Design Science License text" {
-    grep -qi "design science license" "${REPO_ROOT}/LICENSE-DSL.txt"
+@test "phase1: LICENSE.txt identifies CC BY 4.0" {
+    grep -qi "creative commons" "${REPO_ROOT}/LICENSE.txt"
+    grep -qi "4\.0" "${REPO_ROOT}/LICENSE.txt"
 }
 
 @test "phase1: ATTRIBUTION.md is non-empty" {
@@ -94,8 +95,8 @@ teardown_file() {
     grep -qi "kuphaldt" "${REPO_ROOT}/ATTRIBUTION.md"
 }
 
-@test "phase1: ATTRIBUTION.md references the Design Science License" {
-    grep -qi "design science license" "${REPO_ROOT}/ATTRIBUTION.md"
+@test "phase1: ATTRIBUTION.md references CC BY 4.0" {
+    grep -qi "creative commons\|CC BY" "${REPO_ROOT}/ATTRIBUTION.md"
 }
 
 @test "phase1: README.md is non-empty" {
@@ -217,7 +218,7 @@ teardown_file() {
     grep -q "{{ATTRIBUTION_PATH}}" "${REPO_ROOT}/overlay/templates/footer.html"
 }
 
-@test "phase3: footer template references both DSL and attribution links" {
+@test "phase3: footer template references both license and attribution links" {
     grep -q "LICENSE_PATH" "${REPO_ROOT}/overlay/templates/footer.html"
     grep -q "ATTRIBUTION_PATH" "${REPO_ROOT}/overlay/templates/footer.html"
 }
@@ -269,8 +270,8 @@ teardown_file() {
     [ -f "${TEST_OUT}/css/open-circuits.css" ]
 }
 
-@test "phase4: LICENSE-DSL.txt is copied to output root" {
-    [ -f "${TEST_OUT}/LICENSE-DSL.txt" ]
+@test "phase4: LICENSE.txt is copied to output root" {
+    [ -f "${TEST_OUT}/LICENSE.txt" ]
 }
 
 @test "phase4: ATTRIBUTION.md is copied to output root" {
@@ -335,7 +336,7 @@ teardown_file() {
     local page
     page=$(find "${TEST_OUT}" -mindepth 2 -maxdepth 2 -name "*.html" | sort | head -1)
     [ -n "$page" ]
-    grep -q 'href="../LICENSE-DSL.txt"' "$page"
+    grep -q 'href="../LICENSE.txt"' "$page"
     grep -q 'href="../ATTRIBUTION.md"' "$page"
 }
 
@@ -343,7 +344,7 @@ teardown_file() {
     local page
     page=$(find "${TEST_OUT}" -maxdepth 1 -name "*.html" | sort | head -1)
     [ -n "$page" ]
-    grep -q 'href="LICENSE-DSL.txt"' "$page"
+    grep -q 'href="LICENSE.txt"' "$page"
     grep -q 'href="ATTRIBUTION.md"' "$page"
 }
 
