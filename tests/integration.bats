@@ -417,3 +417,99 @@ HTML
     run bash "${REPO_ROOT}/overlay/inject-overlay.sh" /no/such/dir /tmp/out
     [ "$status" -ne 0 ]
 }
+
+# ---------------------------------------------------------------------------
+# Content integrity verification
+# ---------------------------------------------------------------------------
+
+@test "integrity: verify-content-integrity.sh is executable" {
+    [ -x "${REPO_ROOT}/build/verify-content-integrity.sh" ]
+}
+
+@test "integrity: passes when output matches upstream text" {
+    run bash "${REPO_ROOT}/build/verify-content-integrity.sh" \
+        "${REPO_ROOT}/upstream/html" "${TEST_OUT}"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"INTEGRITY CHECK PASSED"* ]]
+}
+
+@test "integrity: reports correct page count" {
+    local page_count
+    page_count=$(find "${REPO_ROOT}/upstream/html" -name "*.html" | wc -l)
+    run bash "${REPO_ROOT}/build/verify-content-integrity.sh" \
+        "${REPO_ROOT}/upstream/html" "${TEST_OUT}"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"${page_count} passed"* ]]
+}
+
+@test "integrity: detects tampered text in output page" {
+    local tmpinput tmpoutput
+    tmpinput=$(mktemp -d)
+    tmpoutput=$(mktemp -d)
+
+    cat > "${tmpinput}/index.html" <<'HTML'
+<html><head><title>T</title></head><body><p>Original text here.</p></body></html>
+HTML
+    bash "${REPO_ROOT}/overlay/inject-overlay.sh" "${tmpinput}" "${tmpoutput}" \
+        > /dev/null 2>&1
+
+    # Tamper with output
+    sed -i 's/Original/TAMPERED/' "${tmpoutput}/index.html"
+
+    run bash "${REPO_ROOT}/build/verify-content-integrity.sh" "${tmpinput}" "${tmpoutput}"
+    rm -rf "${tmpinput}" "${tmpoutput}"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"FAIL"* ]]
+}
+
+@test "integrity: --diff flag shows what changed" {
+    local tmpinput tmpoutput
+    tmpinput=$(mktemp -d)
+    tmpoutput=$(mktemp -d)
+
+    cat > "${tmpinput}/index.html" <<'HTML'
+<html><head><title>T</title></head><body><p>Hello world.</p></body></html>
+HTML
+    bash "${REPO_ROOT}/overlay/inject-overlay.sh" "${tmpinput}" "${tmpoutput}" \
+        > /dev/null 2>&1
+    sed -i 's/Hello/Goodbye/' "${tmpoutput}/index.html"
+
+    run bash "${REPO_ROOT}/build/verify-content-integrity.sh" \
+        --diff "${tmpinput}" "${tmpoutput}"
+    rm -rf "${tmpinput}" "${tmpoutput}"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"Hello"* ]] || [[ "$output" == *"Goodbye"* ]]
+}
+
+@test "integrity: detects missing output page" {
+    local tmpinput tmpoutput
+    tmpinput=$(mktemp -d)
+    tmpoutput=$(mktemp -d)
+    mkdir -p "${tmpinput}/sub"
+
+    cat > "${tmpinput}/index.html" <<'HTML'
+<html><head></head><body><p>Root.</p></body></html>
+HTML
+    cat > "${tmpinput}/sub/page.html" <<'HTML'
+<html><head></head><body><p>Sub page.</p></body></html>
+HTML
+    bash "${REPO_ROOT}/overlay/inject-overlay.sh" "${tmpinput}" "${tmpoutput}" \
+        > /dev/null 2>&1
+    rm "${tmpoutput}/sub/page.html"
+
+    run bash "${REPO_ROOT}/build/verify-content-integrity.sh" "${tmpinput}" "${tmpoutput}"
+    rm -rf "${tmpinput}" "${tmpoutput}"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"MISSING"* ]]
+}
+
+@test "integrity: exits non-zero for missing upstream dir" {
+    run bash "${REPO_ROOT}/build/verify-content-integrity.sh" /no/such/dir /tmp/out
+    [ "$status" -ne 0 ]
+}
+
+@test "integrity: exits non-zero for missing output dir" {
+    run bash "${REPO_ROOT}/build/verify-content-integrity.sh" \
+        "${REPO_ROOT}/upstream/html" /no/such/dir
+    [ "$status" -ne 0 ]
+}
