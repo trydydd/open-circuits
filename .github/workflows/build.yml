@@ -1,0 +1,43 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install zimwriterfs (if available)
+        run: sudo apt-get install -y zimwriterfs 2>/dev/null || echo "zimwriterfs not available — ZIM step will be skipped"
+
+      - name: Build
+        run: python build/build_all.py --skip-integrity
+
+      - name: Verify — no external URLs in output
+        run: python build/verify_content_integrity.py
+
+      - name: Verify — attribution notice present
+        run: |
+          grep -q "LICENSE.txt"    output/html/index.html
+          grep -q "ATTRIBUTION.md" output/html/index.html
+          echo "Attribution notice verified."
+
+      - name: Upload HTML artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: open-circuits-html
+          path: output/html/
+          retention-days: 7
