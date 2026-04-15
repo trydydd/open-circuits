@@ -1,0 +1,159 @@
+                     DESIGN SCIENCE LICENSE
+                     ----------------------
+                     Copyright (C) 2000 Michael Stutz
+                           stutz@dsl.org
+
+Verbatim copying of this document is permitted, in any medium.
+
+0. PREAMBLE
+
+Copyright law gives certain exclusive rights to the author of a work,
+including the rights to copy, modify and distribute the work (the "reproductive,"
+"adaptative," and "distribution" rights).
+
+The idea of "copyleft" is to willfully revoke the exclusivity of those rights
+under certain terms and conditions, so that anyone can copy and distribute the
+work or properly attributed derivative works, while all copies remain under
+the same terms and conditions as the original.
+
+The intent of this license is to be a general "copyleft" that can be applied to
+any kind of work that has protection under copyright. This license states those
+certain conditions under which a work published under its terms may be copied,
+distributed, and modified.
+
+1. DEFINITIONS
+
+a. "License" shall mean this Design Science License. The phrase "this License"
+   refers to the License as a whole, and any ambiguous phrase in this License
+   shall be interpreted such that the intent of this License is best served.
+
+b. "Work" shall mean the work of authorship subject to this License. The Work
+   may contain Embedded Works (as defined in Section 1c), and those Embedded
+   Works, when distributed under the terms of this License, may be distributed
+   separately from the Work in which they appear.
+
+c. "Embedded Work" shall mean a component of a Work that is clearly
+   distinguishable from the rest of the Work, or is separable and distributable
+   as an independent work.
+
+d. "Derivative Work" shall mean a work that reproduces, modifies, translates,
+   transforms, or is otherwise based on the Work or a substantial portion of
+   the Work. Mere aggregation of the Work with other works is not considered a
+   Derivative Work.
+
+e. "Source Data" shall mean the preferred form of the Work for making
+   modifications to it. For works in digital form, Source Data may consist of
+   the working files used to produce the Work, including scripts, code, or
+   other representation.
+
+f. "Author" shall mean the author(s) of the Work.
+
+g. "Distributor" shall mean any person or entity that distributes the Work or
+   copies thereof.
+
+h. "Work" means the Work as defined in Section 1b, including all Embedded Works
+   and Derivative Works.
+
+2. RIGHTS AND COPYRIGHT
+
+The Work is copyright the Author. All rights to the Work are reserved by the
+Author, except as specifically described below. This License describes the
+terms and conditions under which the Author permits you to copy, distribute
+and modify copies of the Work.
+
+In addition, you may refer to the Work, talk about it, and (as dictated by
+"fair use") quote from it, just as you would any copyrighted material under
+copyright law.
+
+Your right to operate, perform, read or otherwise interpret and/or execute the
+Work is unrestricted; however, you do so at your own risk, because the Work
+comes WITHOUT ANY WARRANTY -- see Section 7 ("NO WARRANTY") below.
+
+3. COPYING AND DISTRIBUTION
+
+Permission is granted to distribute verbatim copies of the Work, in any medium,
+provided that you:
+
+a. retain this License and all author-attribution notices intact;
+b. keep intact all copyright notices for the Work;
+c. provide or point to the Source Data for the Work.
+
+You may not distribute the Work under any other terms or conditions, unless
+those terms and conditions restrict the recipient's rights under this License
+no less than they are restricted by this License.
+
+4. MODIFICATION
+
+Permission is granted to modify or translate the Work, provided that you:
+
+a. retain all copyright notices for the Work;
+b. provide a prominent attribution to the original Author stating that the
+   Derivative Work is based on the Work, the name or pseudonym of the Author,
+   and, if possible, the URI where the Work can be found;
+c. rename your Derivative Work so that its name is different from the Work;
+d. publish the Derivative Work under a license at least as free as this License
+   (i.e., you may not impose further restrictions on the recipient's rights);
+e. include the full text of this License, or a pointer to it, with the
+   Derivative Work;
+f. keep intact all notices that refer to this License and to the disclaimer of
+   warranties.
+
+Your Derivative Work is subject to the terms and conditions of this License,
+just as the Work is.
+
+5. SOURCE DATA
+
+Permission to distribute under Sections 3 and 4 is conditional on your
+also making available, in any format acceptable to you, the Source Data for
+the Work (or for your Derivative Work). The Source Data must be available
+for at least as long as you distribute the Work or any Derivative Work.
+
+If the Source Data is not made available in a reasonably accessible format,
+you are required to include either the Source Data or a pointer to a
+network location at which the Source Data may be freely obtained, as part
+of your distribution.
+
+6. AGGREGATION
+
+The aggregation of the Work with other works which are not based on the Work
+does not bring the other works in the scope of this License; nor does such
+aggregation void the terms of this License for the Work.
+
+7. NO WARRANTY
+
+THE WORK IS PROVIDED "AS IS," AND COMES WITH ABSOLUTELY NO WARRANTY,
+EXPRESS OR IMPLIED, TO THE EXTENT PERMITTED BY APPLICABLE LAW, INCLUDING
+BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR
+A PARTICULAR PURPOSE.
+
+8. DISCLAIMER OF LIABILITY
+
+IN NO EVENT SHALL THE AUTHOR OR ANY DISTRIBUTOR OF THE WORK BE LIABLE TO YOU
+FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL
+DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE WORK (INCLUDING BUT NOT
+LIMITED TO LOSS OF DATA, DATA BEING RENDERED INACCURATE, LOSSES SUSTAINED BY
+YOU OR THIRD PARTIES, OR A FAILURE OF THE WORK TO OPERATE WITH ANY OTHER
+PROGRAMS), EVEN IF SUCH AUTHOR OR DISTRIBUTOR HAS BEEN ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGES.
+
+---
+
+END OF TERMS AND CONDITIONS
+
+---
+
+How to Apply This License to Your Work
+
+If you want to apply the Design Science License to your work, include language
+such as the following in your work, or accompany it with a separate file
+containing the full terms of this License:
+
+  Copyright (C) [year]  [your name]
+  This work is licensed under the Design Science License. To view
+  a copy of this license, see the file LICENSE-DSL.txt or visit
+  https://www.ibiblio.org/kuphaldt/electricCircuits/Devel/dsl.html
+
+---
+
+Note: The authoritative text of the Design Science License is maintained at
+https://www.ibiblio.org/kuphaldt/electricCircuits/Devel/dsl.html
