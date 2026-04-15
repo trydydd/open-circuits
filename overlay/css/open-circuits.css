@@ -135,6 +135,11 @@
   box-sizing: border-box;
 }
 
+/* Ensure the HTML hidden attribute is never overridden by display rules */
+[hidden] {
+  display: none !important;
+}
+
 /* =========================================================================
    Base
    ========================================================================= */
