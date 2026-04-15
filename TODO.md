@@ -170,13 +170,13 @@
 ## Phase 9: Navigation Enhancement *(v1.1 — defer if time-constrained)*
 *Client-side JavaScript sidebar table of contents.*
 
-- [ ] Write `overlay/js/navigation.js`:
+- [x] Write `overlay/js/navigation.js`:
   - Builds a collapsible sidebar TOC from the current volume's heading structure
   - Adds inter-volume prev/next chapter links at the top and bottom of each page
   - Highlights current section in TOC as the user scrolls
   - No external dependencies — vanilla JS only, fully self-contained
-- [ ] Update `overlay/templates/header.html` to include sidebar scaffold markup
-- [ ] Update `overlay/css/open-circuits.css` with sidebar layout styles
+- [x] Update `overlay/templates/header.html` to include sidebar scaffold markup
+- [x] Update `overlay/css/open-circuits.css` with sidebar layout styles
 - [ ] Test: open a chapter page locally, verify TOC builds correctly
 - [ ] Commit: "feat: add navigation sidebar (TOC + inter-volume nav)"
 
