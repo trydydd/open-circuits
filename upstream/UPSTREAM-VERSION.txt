@@ -1,0 +1,16 @@
+# Upstream Source Version
+
+This file records the snapshot of Kuphaldt's pre-built HTML bundle used
+in the current build. It is written by build/download-source.sh each time
+the upstream source is downloaded.
+
+---
+
+SOURCE_URL=
+SNAPSHOT_DATE=
+TARBALL=liechtml.tar.gz
+
+---
+
+To update, run:
+  bash build/download-source.sh --force
