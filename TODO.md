@@ -11,10 +11,9 @@
 - [x] Create directory structure with `.gitkeep` placeholders:
   `upstream/`, `build/`, `overlay/css/`, `overlay/js/`, `overlay/templates/`,
   `zim-metadata/`, `output/`, `.github/workflows/`, `docs/`
-- [x] Add `LICENSE-DSL.txt` — full text of the Design Science License
-  (source: https://www.ibiblio.org/kuphaldt/electricCircuits/Devel/dsl.html)
+- [x] Add `LICENSE.txt` — Creative Commons Attribution 4.0 International (CC BY 4.0)
 - [x] Add `ATTRIBUTION.md` — credits Kuphaldt, describes what was modified and when;
-  must satisfy DSL Section 4 (new name, authorship, modification notice)
+  satisfies CC BY 4.0 attribution requirements
 - [x] Add `README.md` — project overview, build prerequisites, quick-start instructions,
   license notice
 - [x] Add `upstream/UPSTREAM-VERSION.txt` — placeholder noting snapshot date/URL to be
@@ -54,7 +53,7 @@
   - Inter-volume navigation links (DC | AC | Semiconductors | Digital | Reference | Experiments)
   - Link back to index
 - [ ] Write `overlay/templates/footer.html`:
-  - Small "License & Attribution" link pointing to `LICENSE-DSL.txt` and `ATTRIBUTION.md`
+  - Small "License & Attribution" link pointing to `LICENSE.txt` and `ATTRIBUTION.md`
   - No need to repeat the full attribution text on every page (full notice lives on
     the root `index.html` and in `ATTRIBUTION.md`)
 - [ ] Commit: "feat: add CSS overlay and header/footer templates"
@@ -195,7 +194,7 @@
 - [ ] Verify self-contained: `grep -r 'http' output/html/ | grep -v 'attribution\|LICENSE\|ibiblio'`
   should return empty
 - [ ] Verify attribution present on root index:
-  `grep -l 'Design Science License' output/html/index.html` should match
+  `grep -l 'CC BY 4.0\|Creative Commons' output/html/index.html` should match
 - [ ] Verify URL path stability: confirm `DC/DC_1.html`, `AC/AC_1.html`, etc. exist
   at the expected paths
 - [ ] (Optional) Test ZIM: `kiwix-serve output/open-circuits.zim` and browse in browser
@@ -211,7 +210,7 @@
 | Upstream source | https://www.ibiblio.org/kuphaldt/electricCircuits/ |
 |---|---|
 | Pre-built HTML bundle | `liechtml.tar.gz` (~36 MB) |
-| License | Design Science License (DSL) |
+| License | Creative Commons Attribution 4.0 (CC BY 4.0) |
 | Output paths | `DC/DC_N.html`, `AC/AC_N.html`, `Semi/SEMI_N.html`, `Digital/DIGI_N.html` |
 | Required notice | See `overlay/templates/footer.html` |
 | Spec | `open-circuits-spec.md` |
