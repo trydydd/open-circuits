@@ -5,16 +5,13 @@
 **Title:** Lessons in Electric Circuits
 **Author:** Tony R. Kuphaldt
 **Source:** https://www.ibiblio.org/kuphaldt/electricCircuits/
-**License:** Design Science License (DSL)
+**License:** Creative Commons Attribution 4.0 International (CC BY 4.0)
+**Copyright:** Copyright (C) 2000–2023 Tony R. Kuphaldt
 
 This project is based on *Lessons in Electric Circuits*, a six-volume
 electronics textbook written by Tony R. Kuphaldt and published freely at
 `ibiblio.org`. The text covers DC circuits, AC circuits, semiconductors,
 digital logic, reference tables, and hands-on experiments.
-
-The original work is copyright Tony R. Kuphaldt and is published under the
-Design Science License. The full license text is included in this repository
-as `LICENSE-DSL.txt`.
 
 ---
 
@@ -22,7 +19,7 @@ as `LICENSE-DSL.txt`.
 
 **Title:** Open Circuits — A Portable Electronics Reference
 **Repository:** https://github.com/trydydd/open-circuits
-**License:** Design Science License (DSL) (same as original, as required)
+**License:** Creative Commons Attribution 4.0 International (CC BY 4.0)
 
 This derivative work was created by the **Hearth project** and consists of:
 
@@ -59,28 +56,27 @@ been modified.
 
 ---
 
-## DSL Section 4 Compliance
+## CC BY 4.0 Compliance
 
-This derivative work satisfies the requirements of Section 4 of the Design
-Science License:
+This derivative work satisfies the requirements of the Creative Commons
+Attribution 4.0 International License:
 
-- **New name:** "Open Circuits — A Portable Electronics Reference" is clearly
-  distinct from "Lessons in Electric Circuits" and cannot be confused with
-  the original.
+- **Credit the creator:** The original text is attributed to Tony R. Kuphaldt
+  throughout — in this file, the footer of every output page, and the README.
 
-- **Authorship credit:** The original text is attributed to Tony R. Kuphaldt
-  throughout. Modifications are attributed to the Hearth project.
+- **Copyright notice:** Copyright (C) 2000–2023 Tony R. Kuphaldt is preserved
+  and reproduced here.
 
-- **Modification notice:** This file (ATTRIBUTION.md) and the footer on every
-  output page describe the nature and date of modifications.
+- **License notice:** The full CC BY 4.0 license is included in this
+  repository as `LICENSE.txt` and linked from every page footer.
 
-- **Same license:** This derivative work is published under the Design Science
-  License, the same license as the original.
+- **Indication of changes:** This file (ATTRIBUTION.md) and the footer on
+  every output page describe the nature and date of modifications made by
+  the Hearth project. The substantive text is unchanged.
 
-- **Source availability:** The GitHub repository contains all source files
-  (scripts, templates, CSS) needed to reproduce the output. The upstream
-  HTML source is downloaded at build time from the publicly accessible URL
-  at ibiblio.org.
+- **No ShareAlike requirement:** CC BY 4.0 does not require derivative works
+  to use the same license. This project is published under CC BY 4.0 by
+  choice, in keeping with the spirit of the original.
 
 ---
 
@@ -90,4 +86,4 @@ The following notice appears on every page of the built site:
 
 > Based on "Lessons in Electric Circuits" by Tony R. Kuphaldt.
 > Converted and restyled by the Hearth project, 2026.
-> Published under the Design Science License.
+> Published under CC BY 4.0.
