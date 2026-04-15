@@ -110,14 +110,20 @@ deployment.
 - `LICENSE-DSL.txt` — Full text of the Design Science License
 - `ATTRIBUTION.md` — Credits Kuphaldt, describes what was modified and when
 
-### Required Notice on Every Output Page
-A footer or colophon on each page of the built site:
+### Required Attribution Notice
+DSL Section 4(c) requires "appropriate notice included with the new work" — not
+a notice on every page. The following satisfies this requirement:
 
-```
-Based on "Lessons in Electric Circuits" by Tony R. Kuphaldt.
-Converted and restyled by the Hearth project, [year].
-Published under the Design Science License.
-```
+- `ATTRIBUTION.md` present in the repo and distribution (already required above)
+- `LICENSE-DSL.txt` present in the repo and distribution (already required above)
+- Attribution notice on the root `index.html` of the built site:
+  ```
+  Based on "Lessons in Electric Circuits" by Tony R. Kuphaldt.
+  Converted and restyled by the Hearth project, [year].
+  Published under the Design Science License.
+  ```
+- A small "License & Attribution" link in the footer of every page pointing to
+  `ATTRIBUTION.md` and `LICENSE-DSL.txt` — no need to repeat the full notice text.
 
 ---
 
