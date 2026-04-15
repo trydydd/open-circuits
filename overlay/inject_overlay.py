@@ -1,0 +1,198 @@
+#!/usr/bin/env python3
+"""
+inject_overlay.py — Inject CSS link, header, and footer into upstream HTML.
+
+Usage:
+    python overlay/inject_overlay.py <input-dir> <output-dir>
+
+What it does:
+    - Copies every .html file from input-dir into output-dir, preserving
+      subdirectory structure.
+    - Inserts <link rel="stylesheet"> into <head>.
+    - Injects header.html content after the opening <body> tag.
+    - Injects footer.html content before the closing </body> tag.
+    - Resolves {{PLACEHOLDER}} tokens so paths are correct at any depth.
+    - Copies overlay/css/ and overlay/js/ into output-dir.
+    - Validates that no external <link> or <script> resource URLs appear
+      outside the injected .oc-footer; exits non-zero if found.
+
+Exits non-zero on any error.
+"""
+
+import argparse
+import re
+import shutil
+import sys
+from pathlib import Path
+
+from bs4 import BeautifulSoup
+
+OVERLAY_DIR = Path(__file__).parent
+REPO_ROOT = OVERLAY_DIR.parent
+
+TEMPLATES_DIR = OVERLAY_DIR / "templates"
+CSS_SRC = OVERLAY_DIR / "css"
+JS_SRC = OVERLAY_DIR / "js"
+
+# Tokens resolved in header/footer templates
+TEMPLATE_KEYS = [
+    "INDEX_PATH",
+    "VOL_DC", "VOL_AC", "VOL_SEMI", "VOL_DIGITAL", "VOL_REF", "VOL_EXPER",
+    "LICENSE_PATH", "ATTRIBUTION_PATH",
+]
+
+
+def resolve_paths(depth: int) -> dict[str, str]:
+    """Return template substitution values for a file at `depth` levels deep."""
+    p = "../" * depth
+    return {
+        "INDEX_PATH":       f"{p}index.html",
+        "VOL_DC":           f"{p}DC/DC_1.html",
+        "VOL_AC":           f"{p}AC/AC_1.html",
+        "VOL_SEMI":         f"{p}Semi/SEMI_1.html",
+        "VOL_DIGITAL":      f"{p}Digital/DIGI_1.html",
+        "VOL_REF":          f"{p}Ref/REF_1.html",
+        "VOL_EXPER":        f"{p}Exper/EXPER_1.html",
+        "LICENSE_PATH":     f"{p}LICENSE.txt",
+        "ATTRIBUTION_PATH": f"{p}ATTRIBUTION.md",
+    }
+
+
+def render_template(tmpl_path: Path, subs: dict[str, str]) -> str:
+    text = tmpl_path.read_text(encoding="utf-8")
+    for key, val in subs.items():
+        text = text.replace("{{" + key + "}}", val)
+    return text.strip()
+
+
+def inject_file(src: Path, dst: Path, depth: int) -> None:
+    """Read src, inject overlay elements, write to dst."""
+    subs = resolve_paths(depth)
+    css_href = f"{'../' * depth}css/open-circuits.css"
+    css_link = f'<link rel="stylesheet" href="{css_href}">'
+    header_html = render_template(TEMPLATES_DIR / "header.html", subs)
+    footer_html = render_template(TEMPLATES_DIR / "footer.html", subs)
+
+    content = src.read_text(encoding="utf-8", errors="replace")
+
+    # Insert CSS link before </head> (case-insensitive)
+    content, n = re.subn(
+        r"(</head>)", f"{css_link}\n\\1", content, count=1, flags=re.IGNORECASE
+    )
+    if n == 0:
+        # No </head> — prepend to file as fallback
+        content = f"{css_link}\n{content}"
+
+    # Inject header after opening <body ...> tag
+    content, n = re.subn(
+        r"(<body[^>]*>)", f"\\1\n{header_html}", content, count=1, flags=re.IGNORECASE
+    )
+    if n == 0:
+        content = f"{header_html}\n{content}"
+
+    # Inject footer before </body>
+    content, n = re.subn(
+        r"(</body>)", f"{footer_html}\n\\1", content, count=1, flags=re.IGNORECASE
+    )
+    if n == 0:
+        content = f"{content}\n{footer_html}"
+
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dst.write_text(content, encoding="utf-8")
+
+
+def validate_no_external_resources(output_dir: Path) -> list[str]:
+    """
+    Return a list of violation strings for any <link href> or <script src>
+    pointing to an external URL, outside the .oc-footer region.
+    """
+    violations = []
+    for html_file in sorted(output_dir.rglob("*.html")):
+        soup = BeautifulSoup(
+            html_file.read_text(encoding="utf-8", errors="replace"), "html.parser"
+        )
+        # Exclude the injected footer from the check
+        for footer in soup.find_all(class_="oc-footer"):
+            footer.decompose()
+
+        for tag in soup.find_all(["link", "script"]):
+            url = tag.get("href") or tag.get("src") or ""
+            if re.match(r"https?://", url, re.IGNORECASE):
+                violations.append(f"{html_file.relative_to(output_dir)}: {tag}")
+
+    return violations
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("input_dir", type=Path,
+                        help="Directory containing upstream HTML tree")
+    parser.add_argument("output_dir", type=Path,
+                        help="Directory to write modified HTML tree into")
+    args = parser.parse_args()
+
+    input_dir: Path = args.input_dir
+    output_dir: Path = args.output_dir
+
+    if not input_dir.is_dir():
+        print(f"Error: input directory not found: {input_dir}", file=sys.stderr)
+        sys.exit(1)
+
+    for tmpl in ["header.html", "footer.html"]:
+        if not (TEMPLATES_DIR / tmpl).exists():
+            print(f"Error: template not found: {TEMPLATES_DIR / tmpl}",
+                  file=sys.stderr)
+            sys.exit(1)
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # ── Process HTML files ────────────────────────────────────────────────────
+
+    html_files = sorted(input_dir.rglob("*.html"))
+    for src in html_files:
+        rel = src.relative_to(input_dir)
+        dst = output_dir / rel
+        depth = len(rel.parts) - 1
+        inject_file(src, dst, depth)
+
+    print(f"Processed {len(html_files)} HTML page(s) → {output_dir}")
+
+    # ── Copy static assets ────────────────────────────────────────────────────
+
+    if CSS_SRC.is_dir():
+        dst_css = output_dir / "css"
+        shutil.copytree(CSS_SRC, dst_css, dirs_exist_ok=True)
+        print(f"Copied CSS → {dst_css}/")
+
+    js_files = [f for f in JS_SRC.iterdir()
+                if f.name != ".gitkeep"] if JS_SRC.is_dir() else []
+    if js_files:
+        dst_js = output_dir / "js"
+        shutil.copytree(JS_SRC, dst_js, dirs_exist_ok=True,
+                        ignore=shutil.ignore_patterns(".gitkeep"))
+        print(f"Copied JS → {dst_js}/")
+
+    for fname in ["LICENSE.txt", "ATTRIBUTION.md"]:
+        src_file = REPO_ROOT / fname
+        if src_file.exists():
+            shutil.copy(src_file, output_dir / fname)
+
+    # ── Validate ──────────────────────────────────────────────────────────────
+
+    print("Validating output for external resource URLs...")
+    violations = validate_no_external_resources(output_dir)
+    if violations:
+        print("ERROR: External resource URLs found in output HTML:",
+              file=sys.stderr)
+        for v in violations:
+            print(f"  {v}", file=sys.stderr)
+        print("The overlay must not introduce external <link> or <script> "
+              "dependencies.", file=sys.stderr)
+        sys.exit(1)
+
+    print("Validation passed: no external resource URLs in output.")
+    print("Done.")
+
+
+if __name__ == "__main__":
+    main()

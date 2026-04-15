@@ -1,0 +1,15 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Build output (also covered by output/.gitignore)
+output/html/
+output/test-html/
+output/*.tar.gz
+output/*.zim
+
+# Upstream cache (downloaded at build time)
+upstream/html/
+upstream/liechtml.tar.gz
