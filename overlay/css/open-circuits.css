@@ -694,10 +694,16 @@ body.sidebar-closed .oc-sidebar {
   }
 
   .oc-sidebar {
-    /* On mobile, sidebar overlays rather than pushing content */
+    /* On mobile, sidebar overlays and is closed by default */
     z-index: 300;
+    transform: translateX(-100%);
     box-shadow: 4px 0 24px oklch(10% 0.010 78 / 0.20);
     transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Open state on mobile: JS removes sidebar-closed */
+  body:not(.sidebar-closed) .oc-sidebar {
+    transform: translateX(0);
   }
 
   /* Show scrim when sidebar is open on mobile */
