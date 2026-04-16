@@ -31,6 +31,8 @@
       else if (src.indexOf('next') !== -1) result.next  = href;
       else if (src.indexOf('contents') !== -1) result.index = href;
     }
+    // Kuphaldt chapter 1: "previous" points to index — suppress redundant button
+    if (result.prev && result.prev === result.index) result.prev = null;
     return result;
   }
 
@@ -213,8 +215,22 @@
     });
   }
 
+  /* ── 8. Active-volume indicator ──────────────────────────────────────── */
+  function markActiveVolume() {
+    var path  = window.location.pathname;
+    var vols  = ['DC', 'AC', 'Semi', 'Digital', 'Ref', 'Exper'];
+    var links = document.querySelectorAll('.oc-vol-nav a');
+    for (var i = 0; i < links.length && i < vols.length; i++) {
+      if (path.indexOf('/' + vols[i] + '/') !== -1) {
+        links[i].classList.add('is-active');
+        break;
+      }
+    }
+  }
+
   /* ── init ─────────────────────────────────────────────────────────────── */
   function init() {
+    markActiveVolume();
     var nav      = extractChapterNav();
     var tocItems = buildTocItems();
 
