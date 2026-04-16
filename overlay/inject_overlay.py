@@ -73,20 +73,21 @@ def inject_file(src: Path, dst: Path, depth: int) -> None:
     subs = resolve_paths(depth)
     css_href = f"{'../' * depth}css/open-circuits.css"
     js_href  = f"{'../' * depth}js/navigation.js"
-    css_link = f'<link rel="stylesheet" href="{css_href}">'
-    js_tag   = f'<script src="{js_href}" defer></script>'
+    css_link  = f'<link rel="stylesheet" href="{css_href}">'
+    js_tag    = f'<script src="{js_href}" defer></script>'
+    viewport  = '<meta name="viewport" content="width=device-width, initial-scale=1">'
     header_html = render_template(TEMPLATES_DIR / "header.html", subs)
     footer_html = render_template(TEMPLATES_DIR / "footer.html", subs)
 
     content = src.read_text(encoding="utf-8", errors="replace")
 
-    # Insert CSS link + JS script before </head> (case-insensitive)
+    # Insert viewport meta, CSS link, and JS script before </head> (case-insensitive)
     content, n = re.subn(
-        r"(</head>)", f"{css_link}\n{js_tag}\n\\1", content, count=1, flags=re.IGNORECASE
+        r"(</head>)", f"{viewport}\n{css_link}\n{js_tag}\n\\1", content, count=1, flags=re.IGNORECASE
     )
     if n == 0:
         # No </head> — prepend to file as fallback
-        content = f"{css_link}\n{js_tag}\n{content}"
+        content = f"{viewport}\n{css_link}\n{js_tag}\n{content}"
 
     # Strip inline style/bgcolor from <body> tag so our CSS theme isn't overridden
     content = re.sub(
