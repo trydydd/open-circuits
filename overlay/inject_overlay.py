@@ -110,6 +110,14 @@ def inject_file(src: Path, dst: Path, depth: int) -> None:
     if n == 0:
         content = f"{content}\n{footer_html}"
 
+    # Rewrite local .htm hrefs/srcs to .html — upstream uses .htm but we rename all files
+    content = re.sub(
+        r'(href|src)="(?!https?://)([^"]*?)\.htm"',
+        lambda m: f'{m.group(1)}="{m.group(2)}.html"',
+        content,
+        flags=re.IGNORECASE,
+    )
+
     dst.parent.mkdir(parents=True, exist_ok=True)
     dst.write_text(content, encoding="utf-8")
 
