@@ -1,212 +1,177 @@
-# Open Circuits — Project TODO
+# Open Circuits — Bug List
 
-> Deliverables from `open-circuits-spec.md`, broken into chunks sized for a single Claude Code context window.
-> Each phase is a coherent unit of work with a clear definition of done.
-
----
-
-## Phase 1: Foundation
-*Repo scaffolding, legal files, and project documentation stubs.*
-
-- [x] Create directory structure with `.gitkeep` placeholders:
-  `upstream/`, `build/`, `overlay/css/`, `overlay/js/`, `overlay/templates/`,
-  `zim-metadata/`, `output/`, `.github/workflows/`, `docs/`
-- [x] Add `LICENSE.txt` — Creative Commons Attribution 4.0 International (CC BY 4.0)
-- [x] Add `ATTRIBUTION.md` — credits Kuphaldt, describes what was modified and when;
-  satisfies CC BY 4.0 attribution requirements
-- [x] Add `README.md` — project overview, build prerequisites, quick-start instructions,
-  license notice
-- [x] Add `upstream/UPSTREAM-VERSION.txt` — placeholder noting snapshot date/URL to be
-  filled in by `download_source.py`
-- [x] Add `output/.gitignore` — ignore all built artifacts under `output/`
-- [x] Commit: "chore: scaffold repo structure and legal files"
+Audited from static code analysis and inspection of the v1.0.0 release tarball.
+Live site (`https://trydydd.github.io/open-circuits/`) was not accessible during audit (403).
 
 ---
 
-## Phase 2: Download Pipeline
-*Script to fetch Kuphaldt's pre-built HTML bundle from ibiblio.*
+## Bugs
 
-- [x] Write `build/download_source.py`:
-  - Download `liechtml.tar.gz` from `https://www.ibiblio.org/kuphaldt/electricCircuits/`
-  - Extract to `upstream/html/`
-  - Write snapshot date and source URL to `upstream/UPSTREAM-VERSION.txt`
-  - Be idempotent: skip download if `upstream/html/` already populated (with `--force` flag to re-download)
-  - Exit non-zero on download failure
-- [x] Test locally: run script, verify `upstream/html/` contains volume subdirectories
-  (`DC/`, `AC/`, `Semi/`, `Digital/`, `Ref/`, `Exper/`)
-- [x] Commit: "feat: add download_source.py"
+### 1. ZIM missing from releases
+**Severity:** High — Kiwix/Hearth integration is broken for every release.
 
----
+`zimwriterfs` is not available in the `ubuntu-latest` CI runner and is not in the default apt
+repositories. The install step in `release.yml` silently falls through:
 
-## Phase 3: Overlay Assets
-*CSS stylesheet and HTML header/footer templates injected into every page.*
+```yaml
+sudo apt-get install -y zimwriterfs 2>/dev/null || echo "zimwriterfs not available — ZIM will not be attached"
+```
 
-- [x] Write `overlay/css/open-circuits.css`:
-  - Improve readability (max-width body, better fonts, line-height) without dramatically
-    altering the original appearance
-  - Responsive layout (mobile-readable)
-  - Style the injected header and footer regions
-  - No external URLs — all self-contained (no Google Fonts, no CDN)
-- [x] Write `overlay/templates/header.html`:
-  - Project name banner: "Open Circuits — A Portable Electronics Reference"
-  - Inter-volume navigation links (DC | AC | Semiconductors | Digital | Reference | Experiments)
-  - Link back to index
-- [x] Write `overlay/templates/footer.html`:
-  - Small "License & Attribution" link pointing to `LICENSE.txt` and `ATTRIBUTION.md`
-  - No need to repeat the full attribution text on every page (full notice lives on
-    the root `index.html` and in `ATTRIBUTION.md`)
-- [x] Commit: "feat: add CSS overlay and header/footer templates"
+The ZIM is never built, so releases ship with only the HTML tarball. The v1.0.0 release confirms
+this: only `open-circuits-v1.0.0.tar.gz` is attached; no `.zim` artifact.
+
+**Files:** `.github/workflows/release.yml`, `build/build_zim.py`
 
 ---
 
-## Phase 4: Overlay Injection Script
-*Python script that inserts header, footer, and CSS link into every upstream HTML page.*
+### 2. Mobile sidebar flash before JS loads
+**Severity:** Medium — visible layout glitch on every mobile page load.
 
-- [x] Write `overlay/inject_overlay.py`:
-  - Takes input dir (built HTML) and output dir as arguments
-  - For each `.html` / `.htm` file (`.htm` renamed to `.html` in output):
-    - Copy file to output dir (preserving subdirectory structure)
-    - Insert `<link rel="stylesheet" href="...open-circuits.css">` in `<head>`
-    - Inject `header.html` content after `<body>` tag
-    - Inject `footer.html` content before `</body>` tag
-    - Copy CSS file and any JS to output alongside HTML
-  - Handle both top-level index pages and volume subdirectory pages
-    (CSS path must be relative: `../css/` vs `css/` depending on depth)
-  - Validate: parse output for any `http://` or `https://` resource URLs not in the
-    attribution footer — exit non-zero if external URLs found
-- [x] Test on real upstream HTML from `upstream/html/`
-- [x] Commit: "feat: add inject_overlay.py"
+The CSS uses `body:not(.sidebar-closed)` to keep the sidebar visible on desktop. On mobile the
+base rule hides the sidebar:
 
----
+```css
+@media (max-width: 768px) {
+  .oc-sidebar { transform: translateX(-100%); }            /* hides */
+  body:not(.sidebar-closed) .oc-sidebar { transform: translateX(0); }  /* overrides — shows */
+}
+```
 
-## Phase 5: Build Orchestration
-*Scripts that tie the pipeline together and produce the final HTML site.*
+Because `body` never has `sidebar-closed` in the initial HTML, the higher-specificity
+`:not(.sidebar-closed)` rule wins and the sidebar is visible. JS then adds `sidebar-closed`
+(closing it), but until that executes there is a flash of the open sidebar on mobile.
 
-- [x] Write `build/build_html.py`:
-  - Ensures `upstream/html/` exists (calls `download_source.py` if not)
-  - Creates `output/html/` (clean or incremental)
-  - Calls `overlay/inject_overlay.py upstream/html/ output/html/`
-  - Runs post-build checks:
-    - No external URLs in output (validation)
-    - Attribution notice present in a sample page
-  - Prints summary: page count, any warnings
-- [x] Write `build/build_all.py`:
-  - Calls `download_source.py` → `build_html.py` → `build_zim.py` in sequence
-  - Creates release tarball: `output/open-circuits-$(git describe --tags).tar.gz`
-    from `output/html/`
-  - Exits non-zero if any step fails
-- [x] Commit: "feat: add build_html.py and build_all.py"
+**Files:** `overlay/css/open-circuits.css:694–715`
 
 ---
 
-## Phase 6: ZIM Packaging
-*Metadata assets and script to build a `.zim` file for Kiwix.*
+### 3. `<p>` margin on `.oc-site-title` disrupts header layout
+**Severity:** Low–Medium — may cause vertical misalignment in the header bar.
 
-- [x] Create `zim-metadata/metadata.yaml`:
-  - `title`: "Open Circuits — A Portable Electronics Reference"
-  - `description`: one-paragraph summary of Kuphaldt's text and this project
-  - `language`: `eng`
-  - `creator`: `Tony R. Kuphaldt`
-  - `publisher`: `Hearth Project`
-  - `date`: current date
-  - `tags`: `electronics;reference;education`
-- [x] Create `zim-metadata/favicon.png` — 48×48 px icon for Kiwix library
-  (can be a simple placeholder; replace before first release)
-- [x] Create `zim-metadata/illustration.png` — 315×250 px illustration for Kiwix catalog
-  (placeholder acceptable for v1)
-- [x] Write `build/build_zim.py`:
-  - Checks `zimwriterfs` is available; prints install hint if not
-  - Runs `zimwriterfs` with source `output/html/`, metadata from `zim-metadata/`,
-    output to `output/open-circuits.zim`
-  - Validates: ZIM file exists and is non-zero bytes
-- [x] Commit: "feat: add ZIM metadata and build_zim.py"
+The header template wraps the site title in a `<p>` tag:
+
+```html
+<p class="oc-site-title"><a href="{{INDEX_PATH}}">Open Circuits</a></p>
+```
+
+The global `p { margin: 0.75em 0 }` rule applies. `.oc-site-title` has no `margin: 0` override.
+Inside a `display: flex` header this adds top/bottom margin that can nudge the title out of
+vertical alignment.
+
+**Files:** `overlay/css/open-circuits.css:207`, `overlay/templates/header.html:14`
 
 ---
 
-## Phase 7: CI/CD Workflows
-*Three GitHub Actions workflows covering CI, Pages deployment, and tagged releases.*
+### 4. No active-volume indicator in header navigation
+**Severity:** Low–Medium — hurts orientation on every page.
 
-- [x] Write `.github/workflows/build.yml` (runs on every push):
-  - Install `zimwriterfs` if available in CI image, or skip ZIM step
-  - Run `python build/build_all.py`
-  - Verify: no external URLs in `output/html/`
-  - Verify: attribution notice present in `output/html/index.html`
-  - Upload `output/html/` as a build artifact for inspection
-- [x] Write `.github/workflows/pages.yml` (runs on push to `main`):
-  - Run `python build/build_html.py`
-  - Deploy `output/html/` to GitHub Pages using `actions/deploy-pages`
-  - Ensure `output/html/` has a root `index.html` (create one if upstream doesn't)
-- [x] Write `.github/workflows/release.yml` (runs on version tag `v*`):
-  - Run `python build/build_all.py`
-  - Attach `output/open-circuits-*.tar.gz` to GitHub release
-  - Attach `output/open-circuits.zim` to GitHub release (if built successfully)
-- [x] Commit: "ci: add build, pages, and release workflows"
+The volume nav (`DC | AC | Semi | Digital | Ref | Exper`) has no visual distinction for the
+current volume. A reader inside the DC volume sees all six links styled identically.
+
+**Files:** `overlay/css/open-circuits.css:444–476`, `overlay/js/navigation.js`
 
 ---
 
-## Phase 8: Documentation
-*Detailed docs for contributors and Hearth integration.*
+### 5. First chapter shows a redundant "Prev" button
+**Severity:** Low — confusing UX on chapter 1 of every volume.
 
-- [x] Write `docs/BUILDING.md`:
-  - Prerequisites (`python3`, `make`, `curl`, `zimwriterfs`)
-  - Step-by-step local build instructions
-  - How to test the output (open in browser, check with `kiwix-serve`)
-  - How to add or update the overlay CSS
-- [x] Write `docs/CONVERSION-NOTES.md`:
-  - Why Option A (pre-built HTML) was chosen over SubML conversion
-  - Notes on the upstream HTML structure (volume dirs, file naming conventions)
-  - Known quirks of Kuphaldt's HTML that affect injection
-  - Future path toward Option B (SubML → modern HTML) if desired
-- [x] Write `docs/HEARTH-INTEGRATION.md`:
-  - How the Hearth ansible role consumes release artifacts
-  - nginx path convention: `/circuits/DC/DC_1.html` etc.
-  - ZIM mode: where to place the `.zim` file in Hearth
-  - URL stability contract (paths must not change across versions)
-  - How `salvage-electronics` links into this content
-- [x] Commit: "docs: add BUILDING, CONVERSION-NOTES, and HEARTH-INTEGRATION"
+Kuphaldt's chapter 1 pages link their "previous" image to `index.html` (the volume TOC).
+`navigation.js` picks this up as `nav.prev = 'index.html'`, the same destination as
+`nav.index`. The sidebar then renders both a "Contents" link and a "← Prev" button pointing
+to the same page.
+
+**Files:** `overlay/js/navigation.js:20–35` (`extractChapterNav`)
 
 ---
 
-## Phase 9: Navigation Enhancement *(v1.1 — defer if time-constrained)*
-*Client-side JavaScript sidebar table of contents.*
+### 6. CSS Relative Color Syntax has limited browser support
+**Severity:** Low — cosmetic degradation on some mobile browsers.
 
-- [x] Write `overlay/js/navigation.js`:
-  - Builds a collapsible sidebar TOC from the current volume's heading structure
-  - Adds inter-volume prev/next chapter links at the top and bottom of each page
-  - Highlights current section in TOC as the user scrolls
-  - No external dependencies — vanilla JS only, fully self-contained
-- [x] Update `overlay/templates/header.html` to include sidebar scaffold markup
-- [x] Update `overlay/css/open-circuits.css` with sidebar layout styles
-- [ ] Test: open a chapter page locally, verify TOC builds correctly
-- [ ] Commit: "feat: add navigation sidebar (TOC + inter-volume nav)"
+```css
+.oc-bottomnav__index {
+  border-color: oklch(from var(--oc-accent) l c h / 0.35) !important;
+}
+```
 
----
+CSS Relative Color Syntax requires Chrome 119+, Firefox 128+, or Safari 16.4+. On older
+browsers the declaration is ignored and the border renders at full opacity.
 
-## Phase 10: End-to-End Validation & First Release
-*Full pipeline smoke test, then tag and push v1.0.0.*
-
-- [x] Run full local build: `python3 build/build_all.py`
-- [x] Open `output/html/` in a browser — spot-check all six volumes load correctly
-- [x] Verify self-contained: `python3 build/verify_content_integrity.py upstream/html/ output/html/`
-  should report no external resource URLs
-- [x] Verify attribution present on root index:
-  `grep -l 'CC BY 4.0\|Creative Commons' output/html/index.html` should match
-- [x] Verify URL path stability: confirm `DC/DC_1.html`, `AC/AC_1.html`, etc. exist
-  at the expected paths (fixed: Experiments volume uses `EXP_1.html`, not `EXPER_1.html`)
-- [ ] (Optional) Test ZIM: `kiwix-serve output/open-circuits.zim` and browse in browser
-- [x] Push branch, confirm GitHub Actions `build.yml` passes
-- [x] Merge to `main`, confirm `pages.yml` deploys to GitHub Pages
-- [x] Tag `v1.0.0`, confirm `release.yml` attaches tarball and ZIM to release
-- [x] Commit/tag: "release: v1.0.0 — first public release"
+**Files:** `overlay/css/open-circuits.css:654`
 
 ---
 
-## Reference
+### 7. `color-mix(in oklch, ...)` table striping has limited browser support
+**Severity:** Low — cosmetic degradation on older Android browsers.
 
-| Upstream source | https://www.ibiblio.org/kuphaldt/electricCircuits/ |
-|---|---|
-| Pre-built HTML bundle | `liechtml.tar.gz` (~36 MB) |
-| License | Creative Commons Attribution 4.0 (CC BY 4.0) |
-| Output paths | `DC/DC_N.html`, `AC/AC_N.html`, `Semi/SEMI_N.html`, `Digital/DIGI_N.html` |
-| Required notice | See `overlay/templates/footer.html` |
-| Spec | `open-circuits-spec.md` |
+```css
+tr:nth-child(even) td {
+  background: color-mix(in oklch, var(--oc-surface) 60%, var(--oc-bg) 40%);
+}
+```
+
+`color-mix()` requires Chrome 111+, Firefox 113+, or Safari 16.2+. On older browsers even
+rows lose their alternating background; tables become harder to scan.
+
+**Files:** `overlay/css/open-circuits.css:311`
+
+---
+
+### 8. OKLCH palette has no fallback colors for older browsers
+**Severity:** Medium — entire site loses all custom styling on older Android WebView.
+
+Every color token uses `oklch()` with no `rgb()` or `hsl()` fallback. `oklch()` requires
+Chrome 111+, Firefox 113+, or Safari 15.4+. Browsers below these versions silently ignore all
+`oklch()` values and fall back to browser defaults, rendering the site without the overlay
+color theme.
+
+Given the project goal ("readable on a €30 Android phone"), this is a meaningful risk.
+
+**Files:** `overlay/css/open-circuits.css:53–128`
+
+---
+
+### 9. Body not centered on wide screens when sidebar is open
+**Severity:** Low — layout looks off on large monitors.
+
+```css
+body {
+  max-width: 920px;
+  padding-left: calc(var(--oc-sidebar-w) + var(--space-xl));  /* 304px */
+  /* no margin: auto */
+}
+body.sidebar-closed {
+  margin: 0 auto;  /* only centered when sidebar is closed */
+}
+```
+
+When the sidebar is open, the body hugs the left edge. On screens wider than 920px, there is
+empty space on the right that is not mirrored on the left, making the layout asymmetric.
+
+**Files:** `overlay/css/open-circuits.css:154–174`
+
+---
+
+### 10. `aria-expanded="true"` hardcoded in header template
+**Severity:** Low — brief ARIA mismatch on mobile page load.
+
+```html
+<button id="oc-nav-toggle" aria-expanded="true" ...>
+```
+
+On mobile, `navigation.js` immediately sets `aria-expanded="false"` when closing the sidebar.
+Until JS runs, screen readers and assistive technology see `aria-expanded="true"` while the
+sidebar is visually closed (bug 2 means it is actually open briefly, so this partially cancels
+out — but the root cause of both is the same missing initial `sidebar-closed` class).
+
+**Files:** `overlay/templates/header.html:5`
+
+---
+
+### 11. Navigation sidebar has never been tested in a browser
+**Severity:** Unknown — functional correctness unverified.
+
+Phase 9 of the original project plan explicitly deferred browser testing. The sidebar TOC
+builder, scroll-spy, and prev/next link extraction have not been verified against real Kuphaldt
+HTML in any browser. Bugs 4 and 5 above were found without running the code.
+
+**Files:** `overlay/js/navigation.js`
