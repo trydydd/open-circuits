@@ -54,7 +54,7 @@ def resolve_paths(depth: int) -> dict[str, str]:
         "VOL_SEMI":         f"{p}Semi/SEMI_1.html",
         "VOL_DIGITAL":      f"{p}Digital/DIGI_1.html",
         "VOL_REF":          f"{p}Ref/REF_1.html",
-        "VOL_EXPER":        f"{p}Exper/EXPER_1.html",
+        "VOL_EXPER":        f"{p}Exper/EXP_1.html",
         "LICENSE_PATH":     f"{p}LICENSE.txt",
         "ATTRIBUTION_PATH": f"{p}ATTRIBUTION.md",
         "JS_PATH":          f"{p}js/",
