@@ -322,6 +322,14 @@ img {
   margin: 1em auto;
 }
 
+@media (prefers-color-scheme: dark) {
+  img {
+    background: oklch(93.5% 0.011 82);
+    border-radius: 3px;
+    padding: 6px;
+  }
+}
+
 center {
   display: block;
   text-align: center;
