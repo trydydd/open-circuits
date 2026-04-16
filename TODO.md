@@ -175,3 +175,21 @@ builder, scroll-spy, and prev/next link extraction have not been verified agains
 HTML in any browser. Bugs 4 and 5 above were found without running the code.
 
 **Files:** `overlay/js/navigation.js`
+
+---
+
+### 12. "Master index" links dead-end on every volume page ✓ fixed
+**Severity:** High — the primary "back to top" navigation link is broken across all six volumes.
+
+Kuphaldt's upstream root index file is named `index.htm`. The build pipeline renames it to
+`index.html` in the output, but never rewrites the internal links that reference it. Every
+volume `index.html` contains two occurrences of `href="../index.htm"` — the links labelled
+"Master index" — which 404 on the deployed site.
+
+**Root cause:** `inject_overlay.py` renames `.htm` files to `.html` on the output path but
+performs no link rewriting inside file content.
+
+**Fix:** Added a `re.sub` pass in `inject_file()` that rewrites any local (non-`http://`)
+`href` or `src` ending in `.htm` to `.html`, matching the renamed output files.
+
+**Files:** `overlay/inject_overlay.py:inject_file()`
