@@ -194,10 +194,10 @@
 - [x] Verify URL path stability: confirm `DC/DC_1.html`, `AC/AC_1.html`, etc. exist
   at the expected paths (fixed: Experiments volume uses `EXP_1.html`, not `EXPER_1.html`)
 - [ ] (Optional) Test ZIM: `kiwix-serve output/open-circuits.zim` and browse in browser
-- [ ] Push branch, confirm GitHub Actions `build.yml` passes
-- [ ] Merge to `main`, confirm `pages.yml` deploys to GitHub Pages
-- [ ] Tag `v1.0.0`, confirm `release.yml` attaches tarball and ZIM to release
-- [ ] Commit/tag: "release: v1.0.0 — first public release"
+- [x] Push branch, confirm GitHub Actions `build.yml` passes
+- [x] Merge to `main`, confirm `pages.yml` deploys to GitHub Pages
+- [x] Tag `v1.0.0`, confirm `release.yml` attaches tarball and ZIM to release
+- [x] Commit/tag: "release: v1.0.0 — first public release"
 
 ---
 
