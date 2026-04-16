@@ -324,7 +324,7 @@ img {
 
 @media (prefers-color-scheme: dark) {
   img {
-    background: oklch(93.5% 0.011 82);
+    background: oklch(84% 0.018 78);
     border-radius: 3px;
     padding: 6px;
   }
@@ -696,7 +696,7 @@ body.sidebar-closed .oc-sidebar {
     padding-left: var(--space-md) !important;
     padding-right: var(--space-md);
     padding-top: calc(var(--oc-header-h) + var(--space-lg));
-    font-size: 16px;
+    font-size: 18px;
     max-width: 100%;
     transition: none;
   }
