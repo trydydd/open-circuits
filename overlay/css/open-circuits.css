@@ -48,6 +48,8 @@
 
 /* =========================================================================
    Design tokens — light theme (default)
+   RGB values are fallbacks for browsers without oklch() support (pre-2023).
+   The @supports block overrides with oklch() on modern browsers.
    ========================================================================= */
 
 :root {
@@ -63,36 +65,66 @@
   --space-xl:  48px;
   --space-2xl: 64px;
 
-  /* Page surface — warm cream, tinted toward amber */
-  --oc-bg:      oklch(96.5% 0.010 82);
-  --oc-surface: oklch(93.5% 0.011 82);
+  /* Page surface — warm cream */
+  --oc-bg:      rgb(246, 243, 235);
+  --oc-surface: rgb(240, 236, 229);
 
   /* Text */
-  --oc-text:   oklch(20%  0.012 75);
-  --oc-text-2: oklch(44%  0.010 75);
-  --oc-text-3: oklch(58%  0.008 75);
+  --oc-text:   rgb(40, 36, 32);
+  --oc-text-2: rgb(95, 90, 86);
+  --oc-text-3: rgb(132, 128, 124);
 
   /* Copper / amber accent */
-  --oc-accent:     oklch(55%  0.130 60);
-  --oc-accent-dim: oklch(48%  0.140 58);
-  --oc-accent-bg:  oklch(91%  0.038 72);
+  --oc-accent:        rgb(147, 95, 22);
+  --oc-accent-dim:    rgb(120, 74, 8);
+  --oc-accent-bg:     rgb(235, 225, 204);
+  --oc-accent-border: rgba(147, 95, 22, 0.35);
 
   /* Links — warm navy */
-  --oc-link:       oklch(38%  0.150 258);
-  --oc-link-hover: oklch(30%  0.165 255);
-  --oc-link-visited: oklch(36% 0.110 280);
+  --oc-link:         rgb(26, 76, 171);
+  --oc-link-hover:   rgb(14, 54, 141);
+  --oc-link-visited: rgb(64, 49, 145);
 
   /* Borders */
-  --oc-border:       oklch(86%  0.011 82);
-  --oc-border-strong: oklch(74% 0.013 78);
+  --oc-border:        rgb(218, 213, 206);
+  --oc-border-strong: rgb(182, 177, 170);
 
   /* Sidebar */
-  --oc-sidebar-bg: oklch(94.5% 0.011 82);
+  --oc-sidebar-bg: rgb(243, 239, 232);
 
   /* Header — dark in both modes */
-  --oc-header-bg:   oklch(19%  0.014 75);
-  --oc-header-text: oklch(91%  0.009 80);
-  --oc-header-text-2: oklch(60% 0.009 80);
+  --oc-header-bg:     rgb(38, 33, 29);
+  --oc-header-text:   rgb(232, 228, 224);
+  --oc-header-text-2: rgb(140, 136, 132);
+}
+
+@supports (color: oklch(0% 0 0)) {
+  :root {
+    --oc-bg:      oklch(96.5% 0.010 82);
+    --oc-surface: oklch(93.5% 0.011 82);
+
+    --oc-text:   oklch(20%  0.012 75);
+    --oc-text-2: oklch(44%  0.010 75);
+    --oc-text-3: oklch(58%  0.008 75);
+
+    --oc-accent:        oklch(55%  0.130 60);
+    --oc-accent-dim:    oklch(48%  0.140 58);
+    --oc-accent-bg:     oklch(91%  0.038 72);
+    --oc-accent-border: oklch(55% 0.130 60 / 0.35);
+
+    --oc-link:         oklch(38%  0.150 258);
+    --oc-link-hover:   oklch(30%  0.165 255);
+    --oc-link-visited: oklch(36% 0.110 280);
+
+    --oc-border:        oklch(86%  0.011 82);
+    --oc-border-strong: oklch(74% 0.013 78);
+
+    --oc-sidebar-bg: oklch(94.5% 0.011 82);
+
+    --oc-header-bg:     oklch(19%  0.014 75);
+    --oc-header-text:   oklch(91%  0.009 80);
+    --oc-header-text-2: oklch(60% 0.009 80);
+  }
 }
 
 /* =========================================================================
@@ -101,29 +133,59 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --oc-bg:      oklch(17%  0.013 80);
-    --oc-surface: oklch(22%  0.012 80);
+    --oc-bg:      rgb(32, 28, 24);
+    --oc-surface: rgb(44, 40, 36);
 
-    --oc-text:   oklch(90%  0.009 82);
-    --oc-text-2: oklch(64%  0.008 80);
-    --oc-text-3: oklch(49%  0.007 80);
+    --oc-text:   rgb(231, 227, 223);
+    --oc-text-2: rgb(153, 149, 145);
+    --oc-text-3: rgb(110, 106, 102);
 
-    --oc-accent:     oklch(68%  0.120 60);
-    --oc-accent-dim: oklch(74%  0.120 60);
-    --oc-accent-bg:  oklch(25%  0.055 68);
+    --oc-accent:        rgb(183, 129, 49);
+    --oc-accent-dim:    rgb(204, 154, 70);
+    --oc-accent-bg:     rgb(58, 44, 20);
+    --oc-accent-border: rgba(183, 129, 49, 0.35);
 
-    --oc-link:       oklch(72%  0.120 252);
-    --oc-link-hover: oklch(80%  0.118 248);
-    --oc-link-visited: oklch(68% 0.100 278);
+    --oc-link:         rgb(84, 150, 220);
+    --oc-link-hover:   rgb(118, 178, 238);
+    --oc-link-visited: rgb(148, 122, 203);
 
-    --oc-border:       oklch(28%  0.012 78);
-    --oc-border-strong: oklch(38% 0.012 78);
+    --oc-border:        rgb(57, 53, 49);
+    --oc-border-strong: rgb(80, 76, 72);
 
-    --oc-sidebar-bg: oklch(20%  0.013 80);
+    --oc-sidebar-bg: rgb(40, 36, 32);
 
-    --oc-header-bg:   oklch(12%  0.012 78);
-    --oc-header-text: oklch(91%  0.009 80);
-    --oc-header-text-2: oklch(57% 0.009 78);
+    --oc-header-bg:     rgb(22, 20, 16);
+    --oc-header-text:   rgb(232, 228, 224);
+    --oc-header-text-2: rgb(129, 125, 121);
+  }
+
+  @supports (color: oklch(0% 0 0)) {
+    :root {
+      --oc-bg:      oklch(17%  0.013 80);
+      --oc-surface: oklch(22%  0.012 80);
+
+      --oc-text:   oklch(90%  0.009 82);
+      --oc-text-2: oklch(64%  0.008 80);
+      --oc-text-3: oklch(49%  0.007 80);
+
+      --oc-accent:        oklch(68%  0.120 60);
+      --oc-accent-dim:    oklch(74%  0.120 60);
+      --oc-accent-bg:     oklch(25%  0.055 68);
+      --oc-accent-border: oklch(68% 0.120 60 / 0.35);
+
+      --oc-link:         oklch(72%  0.120 252);
+      --oc-link-hover:   oklch(80%  0.118 248);
+      --oc-link-visited: oklch(68% 0.100 278);
+
+      --oc-border:        oklch(28%  0.012 78);
+      --oc-border-strong: oklch(38% 0.012 78);
+
+      --oc-sidebar-bg: oklch(20%  0.013 80);
+
+      --oc-header-bg:     oklch(12%  0.012 78);
+      --oc-header-text:   oklch(91%  0.009 80);
+      --oc-header-text-2: oklch(57% 0.009 78);
+    }
   }
 }
 
@@ -152,7 +214,7 @@ html {
    On desktop with sidebar open, body also needs left padding.
    Transitions smooth the sidebar open/close. */
 body {
-  margin: 0;
+  margin: 0 auto;
   max-width: 920px;
   padding-top: calc(var(--oc-header-h) + var(--space-xl));
   padding-bottom: var(--space-2xl);
@@ -169,7 +231,6 @@ body {
 }
 
 body.sidebar-closed {
-  margin: 0 auto;
   padding-left: var(--space-xl);
 }
 
@@ -308,6 +369,7 @@ th {
 }
 
 tr:nth-child(even) td {
+  background: var(--oc-surface);
   background: color-mix(in oklch, var(--oc-surface) 60%, var(--oc-bg) 40%);
 }
 
@@ -324,6 +386,7 @@ img {
 
 @media (prefers-color-scheme: dark) {
   img {
+    background: rgb(211, 206, 198);
     background: oklch(84% 0.018 78);
     border-radius: 3px;
     padding: 6px;
@@ -380,6 +443,7 @@ h1 + h1 + h1 + ul li {
   z-index: 200;
   height: var(--oc-header-h);
   background: var(--oc-header-bg);
+  border-bottom: 1px solid rgb(22, 19, 15);
   border-bottom: 1px solid oklch(12% 0.010 75);
   display: flex;
   align-items: center;
@@ -403,6 +467,7 @@ h1 + h1 + h1 + ul li {
   width: 36px;
   height: 36px;
   background: none;
+  border: 1px solid rgb(72, 67, 63);
   border: 1px solid oklch(32% 0.012 75);
   border-radius: 4px;
   color: var(--oc-header-text);
@@ -412,7 +477,9 @@ h1 + h1 + h1 + ul li {
 }
 
 .oc-nav-toggle:hover {
+  background: rgb(54, 49, 45);
   background: oklch(26% 0.014 75);
+  border-color: rgb(96, 92, 87);
   border-color: oklch(42% 0.012 75);
 }
 
@@ -429,6 +496,7 @@ h1 + h1 + h1 + ul li {
   letter-spacing: 0.01em;
   white-space: nowrap;
   flex-shrink: 0;
+  margin: 0;
 }
 
 .oc-site-title a {
@@ -472,6 +540,13 @@ h1 + h1 + h1 + ul li {
 
 .oc-vol-nav a:hover {
   color: var(--oc-header-text);
+  background: rgb(54, 49, 45);
+  background: oklch(26% 0.014 75);
+}
+
+.oc-vol-nav a.is-active {
+  color: var(--oc-accent);
+  background: rgb(54, 49, 45);
   background: oklch(26% 0.014 75);
 }
 
@@ -508,6 +583,7 @@ body.sidebar-closed .oc-sidebar {
   position: fixed;
   inset: 0;
   z-index: 99;
+  background: rgba(17, 15, 13, 0.55);
   background: oklch(10% 0.010 78 / 0.55);
 }
 
@@ -651,7 +727,7 @@ body.sidebar-closed .oc-sidebar {
 .oc-bottomnav__index {
   margin: 0 auto;
   color: var(--oc-accent) !important;
-  border-color: oklch(from var(--oc-accent) l c h / 0.35) !important;
+  border-color: var(--oc-accent-border) !important;
 }
 
 .oc-bottomnav__index:hover {
@@ -705,6 +781,7 @@ body.sidebar-closed .oc-sidebar {
     /* On mobile, sidebar overlays and is closed by default */
     z-index: 300;
     transform: translateX(-100%);
+    box-shadow: 4px 0 24px rgba(17, 15, 13, 0.20);
     box-shadow: 4px 0 24px oklch(10% 0.010 78 / 0.20);
     transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   }
