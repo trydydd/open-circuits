@@ -185,14 +185,14 @@
 ## Phase 10: End-to-End Validation & First Release
 *Full pipeline smoke test, then tag and push v1.0.0.*
 
-- [ ] Run full local build: `python build/build_all.py`
-- [ ] Open `output/html/` in a browser — spot-check all six volumes load correctly
-- [ ] Verify self-contained: `python build/verify_content_integrity.py upstream/html/ output/html/`
+- [x] Run full local build: `python3 build/build_all.py`
+- [x] Open `output/html/` in a browser — spot-check all six volumes load correctly
+- [x] Verify self-contained: `python3 build/verify_content_integrity.py upstream/html/ output/html/`
   should report no external resource URLs
-- [ ] Verify attribution present on root index:
+- [x] Verify attribution present on root index:
   `grep -l 'CC BY 4.0\|Creative Commons' output/html/index.html` should match
-- [ ] Verify URL path stability: confirm `DC/DC_1.html`, `AC/AC_1.html`, etc. exist
-  at the expected paths
+- [x] Verify URL path stability: confirm `DC/DC_1.html`, `AC/AC_1.html`, etc. exist
+  at the expected paths (fixed: Experiments volume uses `EXP_1.html`, not `EXPER_1.html`)
 - [ ] (Optional) Test ZIM: `kiwix-serve output/open-circuits.zim` and browse in browser
 - [ ] Push branch, confirm GitHub Actions `build.yml` passes
 - [ ] Merge to `main`, confirm `pages.yml` deploys to GitHub Pages
