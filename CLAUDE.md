@@ -48,7 +48,7 @@ AC/AC_N.html       — AC volume chapters
 Semi/SEMI_N.html   — Semiconductors
 Digital/DIGI_N.html — Digital
 Ref/REF_1.html     — Reference
-Exper/EXPER_1.html — Experiments
+Exper/EXP_1.html — Experiments
 ```
 
 Paths must remain stable across versions (Hearth integration depends on them).
