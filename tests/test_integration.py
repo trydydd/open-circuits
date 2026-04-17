@@ -324,6 +324,62 @@ class TestPhase4Injection:
         run(REPO_ROOT / "overlay" / "inject_overlay.py", str(inp), str(out))
         assert "example.com" in (out / "index.html").read_text()
 
+    def test_h1_volume_title_stripped(self, tmp_path):
+        inp = tmp_path / "in"
+        out = tmp_path / "out"
+        inp.mkdir()
+        (inp / "index.html").write_text(
+            '<html><head><title>T</title></head>'
+            '<body><h1>Lessons In Electric Circuits -- Volume I (DC)</h1>'
+            '<p>Chapter content.</p></body></html>'
+        )
+        run(REPO_ROOT / "overlay" / "inject_overlay.py", str(inp), str(out))
+        text = (out / "index.html").read_text()
+        assert "Lessons In Electric Circuits -- Volume I" not in text
+        assert "Chapter content." in text
+
+    def test_bold_volume_title_stripped(self, tmp_path):
+        inp = tmp_path / "in"
+        out = tmp_path / "out"
+        inp.mkdir()
+        (inp / "index.html").write_text(
+            '<html><head><title>T</title></head>'
+            '<body><b>Lessons In Electric Circuits, Volume II (AC)</b>'
+            '<p>Chapter content.</p></body></html>'
+        )
+        run(REPO_ROOT / "overlay" / "inject_overlay.py", str(inp), str(out))
+        text = (out / "index.html").read_text()
+        assert "Lessons In Electric Circuits, Volume II" not in text
+        assert "Chapter content." in text
+
+    def test_volume_title_deep_in_body_not_stripped(self, tmp_path):
+        inp = tmp_path / "in"
+        out = tmp_path / "out"
+        inp.mkdir()
+        padding = "<p>" + ("x " * 300) + "</p>"  # > 500 chars before the heading
+        (inp / "index.html").write_text(
+            '<html><head><title>T</title></head>'
+            f'<body>{padding}'
+            '<h1>Lessons In Electric Circuits -- Volume I (DC)</h1>'
+            '</body></html>'
+        )
+        run(REPO_ROOT / "overlay" / "inject_overlay.py", str(inp), str(out))
+        text = (out / "index.html").read_text()
+        assert "Lessons In Electric Circuits" in text
+
+    def test_unrelated_h1_not_stripped(self, tmp_path):
+        inp = tmp_path / "in"
+        out = tmp_path / "out"
+        inp.mkdir()
+        (inp / "index.html").write_text(
+            '<html><head><title>T</title></head>'
+            '<body><h1>Chapter 1: Introduction to DC</h1>'
+            '<p>Content here.</p></body></html>'
+        )
+        run(REPO_ROOT / "overlay" / "inject_overlay.py", str(inp), str(out))
+        text = (out / "index.html").read_text()
+        assert "Chapter 1: Introduction to DC" in text
+
 
 # ── Content integrity ─────────────────────────────────────────────────────────
 
