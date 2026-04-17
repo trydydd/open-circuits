@@ -66,14 +66,12 @@ def resolve_paths(depth: int) -> dict[str, str]:
 
 def _strip_badge_links(content: str) -> str:
     """Remove upstream hosting/validation badge <a> links from page content."""
-    soup = BeautifulSoup(content, "html.parser")
-    badges = [a for a in soup.find_all("a", href=True)
-              if _BADGE_DOMAINS_RE.search(a.get("href", ""))]
-    if not badges:
-        return content
-    for badge in badges:
-        badge.decompose()
-    return str(soup)
+    return re.sub(
+        r'<a\b[^>]*\bhref=["\'][^"\']*(?:ibiblio\.org|validator\.w3\.org|gnu\.org)[^"\']*["\'][^>]*>.*?</a\s*>',
+        '',
+        content,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
 
 
 def render_template(tmpl_path: Path, subs: dict[str, str]) -> str:
