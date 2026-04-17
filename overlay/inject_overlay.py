@@ -95,6 +95,20 @@ def inject_file(src: Path, dst: Path, depth: int) -> None:
     content = src.read_text(encoding="utf-8", errors="replace")
     content = _strip_badge_links(content)
 
+    # Rewrite upstream chapter titles: "Lessons In Electric Circuits -- Vol N -- Chapter N: Title"
+    # → "Open Circuits — Title"
+    content = re.sub(
+        r"<title>Lessons In Electric Circuits[^<]*?:\s*([^<]+)</title>",
+        "<title>Open Circuits \u2014 \\g<1></title>",
+        content, flags=re.IGNORECASE,
+    )
+    # Fallback: rewrite any remaining bare "Lessons In Electric Circuits..." title
+    content = re.sub(
+        r"<title>Lessons In Electric Circuits[^<]*</title>",
+        "<title>Open Circuits</title>",
+        content, flags=re.IGNORECASE,
+    )
+
     # Insert viewport meta, CSS link, and JS script before </head> (case-insensitive)
     content, n = re.subn(
         r"(</head>)", f"{viewport}\n{css_link}\n{js_tag}\n\\1", content, count=1, flags=re.IGNORECASE
