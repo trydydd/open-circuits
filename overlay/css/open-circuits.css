@@ -488,6 +488,16 @@ h1 + h1 + h1 + ul li {
   outline-offset: 2px;
 }
 
+/* Logo — exempt from the dark-mode img padding/background rule */
+.oc-logo {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border-radius: 0;
+}
+
 /* Site title */
 .oc-site-title {
   font-family: 'Chivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
