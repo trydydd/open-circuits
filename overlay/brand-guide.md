@@ -6,7 +6,13 @@
 
 **File:** `overlay/logo.svg`
 
-The mark is a 300-degree circuit arc — a literal open circuit — with PCB-pad nodes at the two open terminals. Dark charcoal ground, copper arc and nodes. No gradients, no drop shadows, no rounded blobs.
+The mark combines an open-switch arm with a PCB arc and two annular-ring via pads — a schematic open-circuit symbol rendered in PCB aesthetics. Dark charcoal ground (`#26211D`), copper elements (`#935F16`). No gradients, no drop shadows, no rounded blobs.
+
+Elements:
+- A 300° arc (gap at 3 o'clock) suggesting the circuit loop
+- A switch arm extending from the lower terminal — the open/disconnected state
+- Two PCB via pads (copper annular ring + dark drill hole) at the terminals
+- A centre node dot
 
 **Usage**
 | Context | Min size | Clear space |
@@ -91,4 +97,4 @@ The interface is in service of the text. It does not perform warmth; warmth come
 | `zim-metadata/favicon.png` | 48 × 48 px | Kiwix browser tab icon |
 | `zim-metadata/illustration.png` | 315 × 250 px | Kiwix catalog splash |
 
-Both are derived from the SVG mark. Regenerate with the script embedded in commit history if the mark changes.
+Both are derived from the SVG mark. If the mark changes, regenerate the PNGs to match.
