@@ -5,7 +5,7 @@ Ordered by dependency. Parallel-safe tasks are marked.
 
 ---
 
-## Task 1: Logo and brand style guide — FIRST PRIORITY
+## Task 1: Logo and brand style guide ✓ done
 
 Create the Open Circuits visual identity.
 
