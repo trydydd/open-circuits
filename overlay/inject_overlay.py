@@ -36,12 +36,17 @@ JS_SRC = OVERLAY_DIR / "js"
 FONTS_SRC = OVERLAY_DIR / "fonts"
 
 # Tokens resolved in header/footer templates
+LOGO_SRC = OVERLAY_DIR / "logo.svg"
+
 TEMPLATE_KEYS = [
     "INDEX_PATH",
     "VOL_DC", "VOL_AC", "VOL_SEMI", "VOL_DIGITAL", "VOL_REF", "VOL_EXPER",
     "LICENSE_PATH", "ATTRIBUTION_PATH",
-    "JS_PATH",
+    "JS_PATH", "LOGO_PATH",
 ]
+
+# Upstream pages include hosting/validation badge links from these domains
+_BADGE_DOMAINS_RE = re.compile(r"ibiblio\.org|validator\.w3\.org|gnu\.org", re.IGNORECASE)
 
 
 def resolve_paths(depth: int) -> dict[str, str]:
@@ -58,7 +63,38 @@ def resolve_paths(depth: int) -> dict[str, str]:
         "LICENSE_PATH":     f"{p}LICENSE.txt",
         "ATTRIBUTION_PATH": f"{p}ATTRIBUTION.md",
         "JS_PATH":          f"{p}js/",
+        "LOGO_PATH":        f"{p}logo.svg",
     }
+
+
+def _strip_badge_links(content: str) -> str:
+    """Remove upstream hosting/validation badge <a> links from page content."""
+    return re.sub(
+        r'<a\b[^>]*\bhref=["\'][^"\']*(?:ibiblio\.org|validator\.w3\.org|gnu\.org)[^"\']*["\'][^>]*>.*?</a\s*>',
+        '',
+        content,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+
+
+def _strip_volume_title(content: str) -> str:
+    """Remove the redundant 'Lessons In Electric Circuits' volume heading near the top of body."""
+    body_match = re.search(r'<body[^>]*>', content, re.IGNORECASE)
+    if not body_match:
+        return content
+
+    body_start = body_match.end()
+    window = content[body_start:body_start + 500]
+    soup = BeautifulSoup(window, "html.parser")
+    for tag in soup.find_all(["h1", "b"]):
+        if re.search(r"Lessons\s+In\s+Electric\s+Circuits", tag.get_text(), re.IGNORECASE):
+            tag_str = str(tag)
+            idx = window.find(tag_str)
+            if idx != -1:
+                content = content[:body_start + idx] + content[body_start + idx + len(tag_str):]
+            break
+
+    return content
 
 
 def render_template(tmpl_path: Path, subs: dict[str, str]) -> str:
@@ -80,6 +116,22 @@ def inject_file(src: Path, dst: Path, depth: int) -> None:
     footer_html = render_template(TEMPLATES_DIR / "footer.html", subs)
 
     content = src.read_text(encoding="utf-8", errors="replace")
+    content = _strip_badge_links(content)
+    content = _strip_volume_title(content)
+
+    # Rewrite upstream chapter titles: "Lessons In Electric Circuits -- Vol N -- Chapter N: Title"
+    # → "Open Circuits — Title"
+    content = re.sub(
+        r"<title>Lessons In Electric Circuits[^<]*?:\s*([^<]+)</title>",
+        "<title>Open Circuits \u2014 \\g<1></title>",
+        content, flags=re.IGNORECASE,
+    )
+    # Fallback: rewrite any remaining bare "Lessons In Electric Circuits..." title
+    content = re.sub(
+        r"<title>Lessons In Electric Circuits[^<]*</title>",
+        "<title>Open Circuits</title>",
+        content, flags=re.IGNORECASE,
+    )
 
     # Insert viewport meta, CSS link, and JS script before </head> (case-insensitive)
     content, n = re.subn(
@@ -219,6 +271,10 @@ def main() -> None:
         shutil.copytree(FONTS_SRC, dst_fonts, dirs_exist_ok=True,
                         ignore=shutil.ignore_patterns(".gitkeep"))
         print(f"Copied fonts → {dst_fonts}/")
+
+    if LOGO_SRC.exists():
+        shutil.copy2(LOGO_SRC, output_dir / "logo.svg")
+        print(f"Copied logo → {output_dir / 'logo.svg'}")
 
     for fname in ["LICENSE.txt", "ATTRIBUTION.md"]:
         src_file = REPO_ROOT / fname
