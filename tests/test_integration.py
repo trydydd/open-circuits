@@ -295,6 +295,35 @@ class TestPhase4Injection:
                      "/no/such/dir", str(tmp_path / "out"))
         assert result.returncode != 0
 
+    @pytest.mark.parametrize("href,domain", [
+        ("http://www.ibiblio.org", "ibiblio.org"),
+        ("http://validator.w3.org/check?uri=http://example.com/", "validator.w3.org"),
+        ("http://www.gnu.org/copyleft/gpl.html", "gnu.org"),
+    ])
+    def test_badge_link_stripped(self, tmp_path, href, domain):
+        inp = tmp_path / "in"
+        out = tmp_path / "out"
+        inp.mkdir()
+        (inp / "index.html").write_text(
+            f'<html><head><title>T</title></head>'
+            f'<body><p>Content.</p>'
+            f'<a href="{href}"><img src="badge.png" alt="{domain}"></a>'
+            f'</body></html>'
+        )
+        run(REPO_ROOT / "overlay" / "inject_overlay.py", str(inp), str(out))
+        assert domain not in (out / "index.html").read_text()
+
+    def test_non_badge_links_preserved(self, tmp_path):
+        inp = tmp_path / "in"
+        out = tmp_path / "out"
+        inp.mkdir()
+        (inp / "index.html").write_text(
+            '<html><head><title>T</title></head>'
+            '<body><p>See <a href="http://example.com">example</a>.</p></body></html>'
+        )
+        run(REPO_ROOT / "overlay" / "inject_overlay.py", str(inp), str(out))
+        assert "example.com" in (out / "index.html").read_text()
+
 
 # ── Content integrity ─────────────────────────────────────────────────────────
 
