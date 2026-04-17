@@ -103,10 +103,46 @@
       html += '</nav>';
     }
 
+    // Volume list — mobile only (header vol-nav is hidden on small screens)
+    var volLinks = document.querySelectorAll('.oc-vol-nav a');
+    var volNames = ['DC Circuits', 'AC Circuits', 'Semiconductors', 'Digital', 'Reference', 'Experiments'];
+    if (volLinks.length === volNames.length) {
+      var path = window.location.pathname;
+      var volDirs = ['DC', 'AC', 'Semi', 'Digital', 'Ref', 'Exper'];
+      html += '<nav class="oc-vollist" aria-label="Volumes">';
+      html += '<p class="oc-toc__heading">Volumes</p>';
+      html += '<ol class="oc-toc__list">';
+      for (var v = 0; v < volLinks.length; v++) {
+        var isActive = path.indexOf('/' + volDirs[v] + '/') !== -1 ? ' is-active' : '';
+        html += '<li class="oc-toc__item">';
+        html += '<a class="oc-toc__link' + isActive + '" href="' + volLinks[v].getAttribute('href') + '">' + volNames[v] + '</a>';
+        html += '</li>';
+      }
+      html += '</ol>';
+      html += '</nav>';
+    }
+
     sidebar.innerHTML = html;
   }
 
   /* ── 4. Inject bottom chapter navigation ─────────────────────────────── */
+
+  var VOL_DIRS  = ['DC', 'AC', 'Semi', 'Digital', 'Ref', 'Exper'];
+  var VOL_NAMES = ['DC Circuits', 'AC Circuits', 'Semiconductors', 'Digital', 'Reference', 'Experiments'];
+
+  function getNextVolumeLink() {
+    var path = window.location.pathname;
+    for (var i = 0; i < VOL_DIRS.length - 1; i++) {
+      if (path.indexOf('/' + VOL_DIRS[i] + '/') !== -1) {
+        var links = document.querySelectorAll('.oc-vol-nav a');
+        if (links[i + 1]) {
+          return { href: links[i + 1].getAttribute('href'), name: VOL_NAMES[i + 1] };
+        }
+      }
+    }
+    return null;
+  }
+
   function renderBottomNav(nav) {
     if (!nav.prev && !nav.next) return;
     var footer = document.querySelector('.oc-footer');
@@ -128,7 +164,14 @@
     if (nav.next) {
       html += '<a class="oc-bottomnav__next" href="' + nav.next + '">Next \u2192</a>';
     } else {
-      html += '<span class="oc-bottomnav__spacer"></span>';
+      // Last chapter of a volume — offer a quiet path to the next volume
+      var nextVol = nav.prev ? getNextVolumeLink() : null;
+      if (nextVol) {
+        html += '<a class="oc-bottomnav__next oc-bottomnav__next-vol" href="' + nextVol.href + '">' +
+                'Continue to ' + nextVol.name + ' \u2192</a>';
+      } else {
+        html += '<span class="oc-bottomnav__spacer"></span>';
+      }
     }
     el.innerHTML = html;
     footer.before(el);

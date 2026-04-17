@@ -57,6 +57,9 @@
   --oc-header-h:  52px;
   --oc-sidebar-w: 256px;
 
+  /* Border radius — slightly crisper than the CSS-generator default of 4px */
+  --oc-radius: 3px;
+
   /* Spacing scale (4pt base) */
   --space-xs:   4px;
   --space-sm:   8px;
@@ -247,7 +250,7 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 0.5em;
 }
 
-h1 { font-size: 1.35rem; font-weight: 700; }
+h1 { font-size: 1.5rem;  font-weight: 700; }
 h2 { font-size: 1.3rem;  border-bottom: 1px solid var(--oc-border); padding-bottom: 0.25em; }
 h3 { font-size: 1.1rem;  font-weight: 600; }
 h4, h5, h6 { font-size: 1rem; font-weight: 600; }
@@ -310,9 +313,9 @@ pre {
   border: 1px solid var(--oc-border);
   padding: 1rem 1.25rem;
   overflow-x: auto;
-  line-height: 1.5;
+  line-height: 1.6;
   margin: 1.25em 0;
-  border-radius: 4px;
+  border-radius: var(--oc-radius);
 }
 
 pre code, pre tt {
@@ -325,7 +328,8 @@ pre code, pre tt {
 /* Block quotes */
 blockquote {
   background: var(--oc-surface);
-  border-radius: 4px;
+  border-radius: var(--oc-radius);
+  border-left: 3px solid var(--oc-accent-border);
   margin: 1.25em 0;
   padding: 0.75em 1.25em;
   color: var(--oc-text-2);
@@ -419,7 +423,7 @@ h1 + h1 + h1 + ul {
   margin: 1.25em 0;
   padding: 1rem 1.25rem;
   background: var(--oc-surface);
-  border-radius: 4px;
+  border-radius: var(--oc-radius);
   border: 1px solid var(--oc-border);
 }
 
@@ -469,7 +473,7 @@ h1 + h1 + h1 + ul li {
   background: none;
   border: 1px solid rgb(72, 67, 63);
   border: 1px solid oklch(32% 0.012 75);
-  border-radius: 4px;
+  border-radius: var(--oc-radius);
   color: var(--oc-header-text);
   cursor: pointer;
   padding: 0;
@@ -488,14 +492,14 @@ h1 + h1 + h1 + ul li {
   outline-offset: 2px;
 }
 
-/* Logo — exempt from the dark-mode img padding/background rule */
+/* Logo — inline SVG replacing the O in "Open Circuits".
+   Height matches Chivo's cap-height; vertical-align sits it on the baseline. */
 .oc-logo {
   display: inline-block;
-  vertical-align: middle;
-  margin: 0;
-  padding: 0;
-  background: none;
-  border-radius: 0;
+  height: 0.78em;
+  width: auto;
+  vertical-align: -0.08em;
+  margin-right: 0.04em;
 }
 
 /* Site title */
@@ -633,7 +637,7 @@ body.sidebar-closed .oc-sidebar {
   padding: 0.45rem 0.75rem;
   background: var(--oc-bg);
   border: 1px solid var(--oc-border);
-  border-radius: 4px;
+  border-radius: var(--oc-radius);
   font-family: 'Chivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 0.8rem;
   font-weight: 600;
@@ -681,7 +685,7 @@ body.sidebar-closed .oc-sidebar {
 .oc-toc__link {
   display: block;
   padding: 0.35rem 0.6rem;
-  border-radius: 4px;
+  border-radius: var(--oc-radius);
   font-family: 'Vollkorn', Georgia, 'Times New Roman', serif;
   font-size: 0.88rem;
   line-height: 1.4;
@@ -700,6 +704,23 @@ body.sidebar-closed .oc-sidebar {
   color: var(--oc-accent);
   font-weight: 600;
   background: var(--oc-accent-bg);
+}
+
+/* =========================================================================
+   Sidebar volume list — mobile only (header vol-nav is hidden on small screens)
+   ========================================================================= */
+
+.oc-vollist {
+  display: none; /* hidden on desktop — header vol-nav covers this */
+  padding: var(--space-md);
+  margin-top: var(--space-sm);
+  border-top: 1px solid var(--oc-border);
+}
+
+@media (max-width: 768px) {
+  .oc-vollist {
+    display: block;
+  }
 }
 
 /* =========================================================================
@@ -723,7 +744,7 @@ body.sidebar-closed .oc-sidebar {
   color: var(--oc-text-2);
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--oc-border);
-  border-radius: 4px;
+  border-radius: var(--oc-radius);
   transition: color 0.1s, border-color 0.1s, background 0.1s;
 }
 
@@ -748,6 +769,18 @@ body.sidebar-closed .oc-sidebar {
 .oc-bottomnav__spacer {
   flex: 0 0 auto;
   min-width: 80px;
+}
+
+/* End-of-volume continuation link — accent-tinted to signal a path forward */
+.oc-bottomnav__next-vol {
+  color: var(--oc-accent) !important;
+  border-color: var(--oc-accent-border) !important;
+}
+
+.oc-bottomnav__next-vol:hover {
+  background: var(--oc-accent-bg) !important;
+  border-color: var(--oc-accent) !important;
+  color: var(--oc-accent-dim) !important;
 }
 
 /* =========================================================================

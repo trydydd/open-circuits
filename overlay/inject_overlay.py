@@ -77,6 +77,17 @@ def _strip_badge_links(content: str) -> str:
     )
 
 
+def _extract_chapter_title(content: str) -> str | None:
+    """Extract chapter title from <meta name="description" content="...">."""
+    m = re.search(
+        r'<meta\s+name=["\']description["\']\s+content=["\']([^"\']+)["\']',
+        content, re.IGNORECASE,
+    )
+    if m:
+        return m.group(1).strip() or None
+    return None
+
+
 def _strip_volume_title(content: str) -> str:
     """Remove the redundant 'Lessons In Electric Circuits' volume heading near the top of body."""
     body_match = re.search(r'<body[^>]*>', content, re.IGNORECASE)
@@ -119,18 +130,48 @@ def inject_file(src: Path, dst: Path, depth: int) -> None:
     content = _strip_badge_links(content)
     content = _strip_volume_title(content)
 
-    # Rewrite upstream chapter titles: "Lessons In Electric Circuits -- Vol N -- Chapter N: Title"
-    # → "Open Circuits — Title"
+    # Rewrite page title using meta description (most chapters have a meaningful one),
+    # falling back to the colophon-style upstream title, then bare "Open Circuits".
+    chapter_title = _extract_chapter_title(content)
+    if chapter_title:
+        content = re.sub(
+            r"<title>[^<]*</title>",
+            f"<title>Open Circuits \u2014 {chapter_title}</title>",
+            content, count=1, flags=re.IGNORECASE,
+        )
+    else:
+        # Try to extract a meaningful subtitle from "... -- Chapter N: Title"
+        content = re.sub(
+            r"<title>Lessons In Electric Circuits[^<]*?:\s*([^<]+)</title>",
+            "<title>Open Circuits \u2014 \\g<1></title>",
+            content, flags=re.IGNORECASE,
+        )
+        # Final fallback
+        content = re.sub(
+            r"<title>Lessons In Electric Circuits[^<]*</title>",
+            "<title>Open Circuits</title>",
+            content, flags=re.IGNORECASE,
+        )
+
+    # Add lang="en" to <html> tag if not already present
     content = re.sub(
-        r"<title>Lessons In Electric Circuits[^<]*?:\s*([^<]+)</title>",
-        "<title>Open Circuits \u2014 \\g<1></title>",
-        content, flags=re.IGNORECASE,
+        r'(<html)(?![^>]*\blang=)([^>]*>)',
+        r'\1 lang="en"\2',
+        content, count=1, flags=re.IGNORECASE,
     )
-    # Fallback: rewrite any remaining bare "Lessons In Electric Circuits..." title
+
+    # Strip inline background-color styles and presentational border attributes
+    # from <table> tags — Kuphaldt uses hardcoded #E0FFFF that breaks dark mode.
     content = re.sub(
-        r"<title>Lessons In Electric Circuits[^<]*</title>",
-        "<title>Open Circuits</title>",
-        content, flags=re.IGNORECASE,
+        r'(<table)([^>]*)(>)',
+        lambda m: m.group(1) + re.sub(
+            r'\s*(?:style|border)\s*=\s*(?:"[^"]*"|\'[^\']*\'|\S+)',
+            '',
+            m.group(2),
+            flags=re.IGNORECASE,
+        ) + m.group(3),
+        content,
+        flags=re.IGNORECASE,
     )
 
     # Insert viewport meta, CSS link, and JS script before </head> (case-insensitive)
