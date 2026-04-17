@@ -48,6 +48,8 @@ def extract_tokens(path: Path) -> list[str]:
     for anchor in soup.find_all("a", href=True):
         if _BADGE_DOMAINS_RE.search(anchor.get("href", "")):
             anchor.decompose()
+    for title in soup.find_all("title"):
+        title.decompose()
     return soup.get_text(separator=" ").split()
 
 
