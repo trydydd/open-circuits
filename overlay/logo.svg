@@ -1,38 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="8 5 54 54" width="64" height="64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="4 3 58 58" width="64" height="64">
   <!-- Warm dark charcoal background -->
   <rect width="64" height="64" fill="#26211D"/>
 
-  <!-- PCB annular ring — ~300° arc, gap at 3 o'clock (right side).
-       Gap of 60° centred on 0° (right). Arc runs from 30° clockwise
-       through 180° (left) to 330° — the long 300° arc.
+  <!-- PCB annular ring — 300° arc, gap at 3 o'clock (right side).
+       Centre (32,32), radius 24; terminals at 30° and 330°:
+         30°:  (32+24·cos30°,  32+24·sin30°)  = (52.8, 44)
+         330°: (32+24·cos330°, 32+24·sin330°) = (52.8, 20) -->
+  <path d="M 52.8 44 A 24 24 0 1 1 52.8 20"
+        fill="none"
+        stroke="#935F16"
+        stroke-width="4.5"
+        stroke-linecap="round"/>
 
-       Centre (32,32), radius 19:
-         point at  30°: (32+19·cos30°,  32+19·sin30°)  = (48.45, 41.5)
-         point at 330°: (32+19·cos330°, 32+19·sin330°) = (48.45, 22.5)
-
-       large-arc=1, sweep=1 (clockwise) -->
-  <path d="M 48.45 41.5 A 19 19 0 1 1 48.45 22.5"
+  <!-- Switch arm: from lower terminal, opening toward upper-right -->
+  <path d="M 52.8 44 A 24 24 0 0 0 60 33"
         fill="none"
         stroke="#935F16"
         stroke-width="4"
         stroke-linecap="round"/>
 
-  <!-- Switch arm: r=19 arc, pivot at lower terminal.
-       Tip at (57,30) — ring_dist=25, chord=14.3px, ~37° from vertical.
-       That is half the ~75° angle of the approved open position.
-       sweep=0 CCW, large-arc=0 (44° arc) -->
-  <path d="M 48.45 41.5 A 19 19 0 0 0 57 30"
-        fill="none"
-        stroke="#935F16"
-        stroke-width="3.5"
-        stroke-linecap="round"/>
-
   <!-- Terminal pads — via treatment: copper annular ring + dark drill hole -->
-  <circle cx="48.45" cy="41.5" r="5" fill="#935F16"/>
-  <circle cx="48.45" cy="41.5" r="2" fill="#26211D"/>
-  <circle cx="48.45" cy="22.5" r="5" fill="#935F16"/>
-  <circle cx="48.45" cy="22.5" r="2" fill="#26211D"/>
+  <circle cx="52.8" cy="44" r="5.5" fill="#935F16"/>
+  <circle cx="52.8" cy="44" r="2.5" fill="#26211D"/>
+  <circle cx="52.8" cy="20" r="5.5" fill="#935F16"/>
+  <circle cx="52.8" cy="20" r="2.5" fill="#26211D"/>
 
   <!-- Centre node dot -->
-  <circle cx="32" cy="32" r="4" fill="#935F16"/>
+  <circle cx="32" cy="32" r="5" fill="#935F16"/>
 </svg>
