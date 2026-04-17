@@ -43,6 +43,9 @@ TEMPLATE_KEYS = [
     "JS_PATH",
 ]
 
+# Upstream pages include hosting/validation badge links from these domains
+_BADGE_DOMAINS_RE = re.compile(r"ibiblio\.org|validator\.w3\.org|gnu\.org", re.IGNORECASE)
+
 
 def resolve_paths(depth: int) -> dict[str, str]:
     """Return template substitution values for a file at `depth` levels deep."""
@@ -59,6 +62,18 @@ def resolve_paths(depth: int) -> dict[str, str]:
         "ATTRIBUTION_PATH": f"{p}ATTRIBUTION.md",
         "JS_PATH":          f"{p}js/",
     }
+
+
+def _strip_badge_links(content: str) -> str:
+    """Remove upstream hosting/validation badge <a> links from page content."""
+    soup = BeautifulSoup(content, "html.parser")
+    badges = [a for a in soup.find_all("a", href=True)
+              if _BADGE_DOMAINS_RE.search(a.get("href", ""))]
+    if not badges:
+        return content
+    for badge in badges:
+        badge.decompose()
+    return str(soup)
 
 
 def render_template(tmpl_path: Path, subs: dict[str, str]) -> str:
@@ -80,6 +95,7 @@ def inject_file(src: Path, dst: Path, depth: int) -> None:
     footer_html = render_template(TEMPLATES_DIR / "footer.html", subs)
 
     content = src.read_text(encoding="utf-8", errors="replace")
+    content = _strip_badge_links(content)
 
     # Insert viewport meta, CSS link, and JS script before </head> (case-insensitive)
     content, n = re.subn(
