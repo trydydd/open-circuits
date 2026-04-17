@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Open Circuits">
+  <!-- Dark warm charcoal background -->
+  <rect width="64" height="64" rx="8" fill="#26211D"/>
+  <!--
+    Open circuit motif: a 300-degree arc (gap at 12 o'clock) representing a
+    literal open circuit, with PCB-pad nodes at the two open terminals.
+
+    Arc endpoints at Pillow/SVG 240° and 300° from centre (32, 32), r=16:
+      Left terminal  (10:30): (24, 18)
+      Right terminal (01:30): (40, 18)
+
+    Path goes clockwise from left terminal, around the bottom, to right terminal
+    (large-arc-flag=1, sweep-flag=1).
+  -->
+  <path d="M 24 18 A 16 16 0 1 1 40 18"
+        fill="none"
+        stroke="#935F16"
+        stroke-width="4.5"
+        stroke-linecap="round"/>
+  <!-- PCB pad nodes at open terminals -->
+  <circle cx="24" cy="18" r="4" fill="#935F16"/>
+  <circle cx="40" cy="18" r="4" fill="#935F16"/>
+</svg>
