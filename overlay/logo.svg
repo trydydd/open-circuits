@@ -1,23 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Open Circuits">
-  <!-- Dark warm charcoal background -->
-  <rect width="64" height="64" rx="8" fill="#26211D"/>
-  <!--
-    Open circuit motif: a 300-degree arc (gap at 12 o'clock) representing a
-    literal open circuit, with PCB-pad nodes at the two open terminals.
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Warm dark charcoal background -->
+  <rect width="64" height="64" rx="10" fill="#26211D"/>
 
-    Arc endpoints at Pillow/SVG 240° and 300° from centre (32, 32), r=16:
-      Left terminal  (10:30): (24, 18)
-      Right terminal (01:30): (40, 18)
+  <!-- PCB annular ring — ~300° arc, gap at 3 o'clock (right side).
+       Gap of 60° centred on 0° (right). Arc runs from 30° clockwise
+       through 180° (left) to 330° — the long 300° arc.
 
-    Path goes clockwise from left terminal, around the bottom, to right terminal
-    (large-arc-flag=1, sweep-flag=1).
-  -->
-  <path d="M 24 18 A 16 16 0 1 1 40 18"
+       Centre (32,32), radius 19:
+         point at  30°: (32+19·cos30°,  32+19·sin30°)  = (48.45, 41.5)
+         point at 330°: (32+19·cos330°, 32+19·sin330°) = (48.45, 22.5)
+
+       large-arc=1, sweep=1 (clockwise) -->
+  <path d="M 48.45 41.5 A 19 19 0 1 1 48.45 22.5"
         fill="none"
         stroke="#935F16"
-        stroke-width="4.5"
+        stroke-width="4"
         stroke-linecap="round"/>
-  <!-- PCB pad nodes at open terminals -->
-  <circle cx="24" cy="18" r="4" fill="#935F16"/>
-  <circle cx="40" cy="18" r="4" fill="#935F16"/>
+
+  <!-- Switch arm: r=19 arc, pivot at lower terminal.
+       Tip at (57,30) — ring_dist=25, chord=14.3px, ~37° from vertical.
+       That is half the ~75° angle of the approved open position.
+       sweep=0 CCW, large-arc=0 (44° arc) -->
+  <path d="M 48.45 41.5 A 19 19 0 0 0 57 30"
+        fill="none"
+        stroke="#935F16"
+        stroke-width="3.5"
+        stroke-linecap="round"/>
+
+  <!-- Terminal pads — via treatment: copper annular ring + dark drill hole -->
+  <circle cx="48.45" cy="41.5" r="5" fill="#935F16"/>
+  <circle cx="48.45" cy="41.5" r="2" fill="#26211D"/>
+  <circle cx="48.45" cy="22.5" r="5" fill="#935F16"/>
+  <circle cx="48.45" cy="22.5" r="2" fill="#26211D"/>
+
+  <!-- Centre node dot -->
+  <circle cx="32" cy="32" r="4" fill="#935F16"/>
 </svg>
