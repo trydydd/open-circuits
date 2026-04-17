@@ -28,7 +28,7 @@ Create the Open Circuits visual identity.
 
 ---
 
-## Task 2: Strip ibiblio badges and upstream bottom-of-page banners — parallel-safe
+## Task 2: Strip ibiblio badges and upstream bottom-of-page banners — ✓ done
 
 The upstream HTML contains external badge links at the bottom of pages:
 - `<a href="http://www.ibiblio.org"><img ...></a>` — ibiblio hosting badge
