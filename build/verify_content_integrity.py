@@ -31,6 +31,7 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 
 _BADGE_DOMAINS_RE = re.compile(r"ibiblio\.org|validator\.w3\.org|gnu\.org", re.IGNORECASE)
+_VOLUME_TITLE_RE = re.compile(r"Lessons\s+In\s+Electric\s+Circuits", re.IGNORECASE)
 
 REPO_ROOT = Path(__file__).parent.parent
 
@@ -38,7 +39,8 @@ REPO_ROOT = Path(__file__).parent.parent
 def extract_tokens(path: Path) -> list[str]:
     """
     Return a list of whitespace-delimited text tokens from an HTML file,
-    with .oc-header, .oc-footer, and upstream badge links removed.
+    with .oc-header, .oc-footer, upstream badge links, and the redundant
+    volume title heading removed.
     """
     soup = BeautifulSoup(
         path.read_text(encoding="utf-8", errors="replace"), "html.parser"
@@ -48,6 +50,17 @@ def extract_tokens(path: Path) -> list[str]:
     for anchor in soup.find_all("a", href=True):
         if _BADGE_DOMAINS_RE.search(anchor.get("href", "")):
             anchor.decompose()
+    # Strip the redundant volume title heading (mirrors inject_overlay.py behaviour)
+    body = soup.find("body")
+    if body:
+        body_text_so_far = 0
+        for tag in body.find_all(["h1", "b"]):
+            if body_text_so_far > 500:
+                break
+            if _VOLUME_TITLE_RE.search(tag.get_text()):
+                tag.decompose()
+                break
+            body_text_so_far += len(str(tag))
     return soup.get_text(separator=" ").split()
 
 
