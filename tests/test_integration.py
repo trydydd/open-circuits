@@ -295,6 +295,91 @@ class TestPhase4Injection:
                      "/no/such/dir", str(tmp_path / "out"))
         assert result.returncode != 0
 
+    @pytest.mark.parametrize("href,domain", [
+        ("http://www.ibiblio.org", "ibiblio.org"),
+        ("http://validator.w3.org/check?uri=http://example.com/", "validator.w3.org"),
+        ("http://www.gnu.org/copyleft/gpl.html", "gnu.org"),
+    ])
+    def test_badge_link_stripped(self, tmp_path, href, domain):
+        inp = tmp_path / "in"
+        out = tmp_path / "out"
+        inp.mkdir()
+        (inp / "index.html").write_text(
+            f'<html><head><title>T</title></head>'
+            f'<body><p>Content.</p>'
+            f'<a href="{href}"><img src="badge.png" alt="{domain}"></a>'
+            f'</body></html>'
+        )
+        run(REPO_ROOT / "overlay" / "inject_overlay.py", str(inp), str(out))
+        assert domain not in (out / "index.html").read_text()
+
+    def test_non_badge_links_preserved(self, tmp_path):
+        inp = tmp_path / "in"
+        out = tmp_path / "out"
+        inp.mkdir()
+        (inp / "index.html").write_text(
+            '<html><head><title>T</title></head>'
+            '<body><p>See <a href="http://example.com">example</a>.</p></body></html>'
+        )
+        run(REPO_ROOT / "overlay" / "inject_overlay.py", str(inp), str(out))
+        assert "example.com" in (out / "index.html").read_text()
+
+    def test_h1_volume_title_stripped(self, tmp_path):
+        inp = tmp_path / "in"
+        out = tmp_path / "out"
+        inp.mkdir()
+        (inp / "index.html").write_text(
+            '<html><head><title>T</title></head>'
+            '<body><h1>Lessons In Electric Circuits -- Volume I (DC)</h1>'
+            '<p>Chapter content.</p></body></html>'
+        )
+        run(REPO_ROOT / "overlay" / "inject_overlay.py", str(inp), str(out))
+        text = (out / "index.html").read_text()
+        assert "Lessons In Electric Circuits -- Volume I" not in text
+        assert "Chapter content." in text
+
+    def test_bold_volume_title_stripped(self, tmp_path):
+        inp = tmp_path / "in"
+        out = tmp_path / "out"
+        inp.mkdir()
+        (inp / "index.html").write_text(
+            '<html><head><title>T</title></head>'
+            '<body><b>Lessons In Electric Circuits, Volume II (AC)</b>'
+            '<p>Chapter content.</p></body></html>'
+        )
+        run(REPO_ROOT / "overlay" / "inject_overlay.py", str(inp), str(out))
+        text = (out / "index.html").read_text()
+        assert "Lessons In Electric Circuits, Volume II" not in text
+        assert "Chapter content." in text
+
+    def test_volume_title_deep_in_body_not_stripped(self, tmp_path):
+        inp = tmp_path / "in"
+        out = tmp_path / "out"
+        inp.mkdir()
+        padding = "<p>" + ("x " * 300) + "</p>"  # > 500 chars before the heading
+        (inp / "index.html").write_text(
+            '<html><head><title>T</title></head>'
+            f'<body>{padding}'
+            '<h1>Lessons In Electric Circuits -- Volume I (DC)</h1>'
+            '</body></html>'
+        )
+        run(REPO_ROOT / "overlay" / "inject_overlay.py", str(inp), str(out))
+        text = (out / "index.html").read_text()
+        assert "Lessons In Electric Circuits" in text
+
+    def test_unrelated_h1_not_stripped(self, tmp_path):
+        inp = tmp_path / "in"
+        out = tmp_path / "out"
+        inp.mkdir()
+        (inp / "index.html").write_text(
+            '<html><head><title>T</title></head>'
+            '<body><h1>Chapter 1: Introduction to DC</h1>'
+            '<p>Content here.</p></body></html>'
+        )
+        run(REPO_ROOT / "overlay" / "inject_overlay.py", str(inp), str(out))
+        text = (out / "index.html").read_text()
+        assert "Chapter 1: Introduction to DC" in text
+
 
 # ── Content integrity ─────────────────────────────────────────────────────────
 
