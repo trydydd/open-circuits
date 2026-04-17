@@ -271,7 +271,7 @@ class TestActiveVolumeIndicator:
         page = injected_dc2 / "DC" / "DC_2.html"
         s = soup(page)
         texts = [a.get_text(strip=True) for a in s.find(class_="oc-vol-nav").find_all("a")]
-        assert texts == ["DC", "AC", "Semi", "Digital", "Ref", "Exper"]
+        assert texts == ["DC", "AC", "Semiconductors", "Digital", "Reference", "Experiments"]
 
     def test_dc_link_href_contains_dc_dir(self, injected_dc2):
         page = injected_dc2 / "DC" / "DC_2.html"
