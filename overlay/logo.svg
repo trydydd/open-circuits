@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="8 5 54 54" width="64" height="64">
   <!-- Warm dark charcoal background -->
-  <rect width="64" height="64" rx="10" fill="#26211D"/>
+  <rect width="64" height="64" fill="#26211D"/>
 
   <!-- PCB annular ring — ~300° arc, gap at 3 o'clock (right side).
        Gap of 60° centred on 0° (right). Arc runs from 30° clockwise
