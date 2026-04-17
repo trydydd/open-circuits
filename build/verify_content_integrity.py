@@ -50,6 +50,8 @@ def extract_tokens(path: Path) -> list[str]:
     for anchor in soup.find_all("a", href=True):
         if _BADGE_DOMAINS_RE.search(anchor.get("href", "")):
             anchor.decompose()
+    for title in soup.find_all("title"):
+        title.decompose()
     # Strip the redundant volume title heading (mirrors inject_overlay.py behaviour)
     body = soup.find("body")
     if body:
