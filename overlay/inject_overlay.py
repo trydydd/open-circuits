@@ -74,6 +74,26 @@ def _strip_badge_links(content: str) -> str:
     )
 
 
+def _strip_volume_title(content: str) -> str:
+    """Remove the redundant 'Lessons In Electric Circuits' volume heading near the top of body."""
+    body_match = re.search(r'<body[^>]*>', content, re.IGNORECASE)
+    if not body_match:
+        return content
+
+    body_start = body_match.end()
+    window = content[body_start:body_start + 500]
+    soup = BeautifulSoup(window, "html.parser")
+    for tag in soup.find_all(["h1", "b"]):
+        if re.search(r"Lessons\s+In\s+Electric\s+Circuits", tag.get_text(), re.IGNORECASE):
+            tag_str = str(tag)
+            idx = window.find(tag_str)
+            if idx != -1:
+                content = content[:body_start + idx] + content[body_start + idx + len(tag_str):]
+            break
+
+    return content
+
+
 def render_template(tmpl_path: Path, subs: dict[str, str]) -> str:
     text = tmpl_path.read_text(encoding="utf-8")
     for key, val in subs.items():
@@ -94,6 +114,7 @@ def inject_file(src: Path, dst: Path, depth: int) -> None:
 
     content = src.read_text(encoding="utf-8", errors="replace")
     content = _strip_badge_links(content)
+    content = _strip_volume_title(content)
 
     # Insert viewport meta, CSS link, and JS script before </head> (case-insensitive)
     content, n = re.subn(
