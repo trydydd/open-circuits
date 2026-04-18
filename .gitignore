@@ -13,3 +13,7 @@ output/*.zim
 # Upstream cache (downloaded at build time)
 upstream/html/
 upstream/liechtml.tar.gz
+
+# OS
+.DS_Store
+Thumbs.db
