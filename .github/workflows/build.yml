@@ -18,13 +18,16 @@ jobs:
           cache: pip
 
       - name: Install Python dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements-dev.txt
 
       - name: Install zimwriterfs (if available)
         run: sudo apt-get install -y zimwriterfs 2>/dev/null || echo "zimwriterfs not available — ZIM step will be skipped"
 
       - name: Build
         run: python build/build_all.py --skip-integrity
+
+      - name: Run tests
+        run: pytest tests/ -v
 
       - name: Verify — no external URLs in output
         run: python build/verify_content_integrity.py
