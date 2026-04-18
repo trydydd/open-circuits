@@ -19,7 +19,7 @@ digital logic, reference tables, and hands-on experiments.
 
 **Title:** Open Circuits — A Portable Electronics Reference
 **Repository:** https://github.com/trydydd/open-circuits
-**License:** Creative Commons Attribution 4.0 International (CC BY 4.0)
+**License:** Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
 
 This derivative work was created by the **Hearth project** and consists of:
 
@@ -56,10 +56,10 @@ been modified.
 
 ---
 
-## CC BY 4.0 Compliance
+## CC BY-SA 4.0 Compliance
 
 This derivative work satisfies the requirements of the Creative Commons
-Attribution 4.0 International License:
+Attribution-ShareAlike 4.0 International License:
 
 - **Credit the creator:** The original text is attributed to Tony R. Kuphaldt
   throughout — in this file, the footer of every output page, and the README.
@@ -67,16 +67,17 @@ Attribution 4.0 International License:
 - **Copyright notice:** Copyright (C) 2000–2023 Tony R. Kuphaldt is preserved
   and reproduced here.
 
-- **License notice:** The full CC BY 4.0 license is included in this
+- **License notice:** The full CC BY-SA 4.0 license is included in this
   repository as `LICENSE.txt` and linked from every page footer.
 
 - **Indication of changes:** This file (ATTRIBUTION.md) and the footer on
   every output page describe the nature and date of modifications made by
   the Hearth project. The substantive text is unchanged.
 
-- **No ShareAlike requirement:** CC BY 4.0 does not require derivative works
-  to use the same license. This project is published under CC BY 4.0 by
-  choice, in keeping with the spirit of the original.
+- **ShareAlike:** This project is published under CC BY-SA 4.0 by choice,
+  to ensure improvements remain in the commons. Kuphaldt's CC BY 4.0
+  explicitly permits derivative works to use a different license, including
+  CC BY-SA 4.0 (see Appendix A3 of his text).
 
 ---
 
@@ -86,4 +87,4 @@ The following notice appears on every page of the built site:
 
 > Based on "Lessons in Electric Circuits" by Tony R. Kuphaldt.
 > Converted and restyled by the Hearth project, 2026.
-> Published under CC BY 4.0.
+> Published under CC BY-SA 4.0.

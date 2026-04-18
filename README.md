@@ -25,7 +25,7 @@ with Kiwix.
 
 ## Build Prerequisites
 
-- **Python 3.9+** — the only required system dependency
+- **Python 3.10+** — the only required system dependency
 - `zimwriterfs` — optional, required only for ZIM packaging
   (from [openzim/zim-tools](https://github.com/openzim/zim-tools))
 
@@ -90,8 +90,8 @@ Exper/EXPER_1.html — Volume VI (Experiments)
 
 ```
 open-circuits/
-├── LICENSE.txt              # Creative Commons Attribution 4.0 (CC BY 4.0)
-├── ATTRIBUTION.md           # Credits, modification log, CC BY 4.0 compliance
+├── LICENSE.txt              # Creative Commons Attribution-ShareAlike 4.0 (CC BY-SA 4.0)
+├── ATTRIBUTION.md           # Credits, modification log, CC BY-SA 4.0 compliance
 ├── README.md                # This file
 ├── pyproject.toml           # Project metadata
 ├── requirements.txt         # Runtime Python dependencies
@@ -130,11 +130,12 @@ open-circuits/
 
 The original text is copyright Tony R. Kuphaldt (© 2000–2023) and published
 under the **Creative Commons Attribution 4.0 International** license (CC BY 4.0).
-This derivative work is published under the same license.
+This derivative work is published under **Creative Commons Attribution-ShareAlike
+4.0 International** (CC BY-SA 4.0).
 
 > Based on "Lessons in Electric Circuits" by Tony R. Kuphaldt.
 > Converted and restyled by the Hearth project, 2026.
-> Published under CC BY 4.0.
+> Published under CC BY-SA 4.0.
 
 See `LICENSE.txt` for the full license text and `ATTRIBUTION.md` for
 complete credits and modification notices.
