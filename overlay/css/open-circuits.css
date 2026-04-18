@@ -496,9 +496,9 @@ h1 + h1 + h1 + ul li {
    Height matches Chivo's cap-height; vertical-align sits it on the baseline. */
 .oc-logo {
   display: inline-block;
-  height: 0.78em;
+  height: 1.17em;
   width: auto;
-  vertical-align: -0.08em;
+  vertical-align: -0.22em;
   margin-right: 0.04em;
 }
 

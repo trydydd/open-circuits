@@ -42,11 +42,22 @@ TEMPLATE_KEYS = [
     "INDEX_PATH",
     "VOL_DC", "VOL_AC", "VOL_SEMI", "VOL_DIGITAL", "VOL_REF", "VOL_EXPER",
     "LICENSE_PATH", "ATTRIBUTION_PATH",
-    "JS_PATH", "LOGO_PATH",
+    "JS_PATH", "LOGO_PATH", "LOGO_SVG",
 ]
 
 # Upstream pages include hosting/validation badge links from these domains
 _BADGE_DOMAINS_RE = re.compile(r"ibiblio\.org|validator\.w3\.org|gnu\.org", re.IGNORECASE)
+
+
+def _load_inline_logo() -> str:
+    """Read logo.svg and prepare it for inline HTML use."""
+    svg = LOGO_SRC.read_text(encoding="utf-8").strip()
+    return re.sub(
+        r"^<svg\b",
+        '<svg class="oc-logo" aria-hidden="true" focusable="false"',
+        svg,
+        count=1,
+    )
 
 
 def resolve_paths(depth: int) -> dict[str, str]:
@@ -64,6 +75,7 @@ def resolve_paths(depth: int) -> dict[str, str]:
         "ATTRIBUTION_PATH": f"{p}ATTRIBUTION.md",
         "JS_PATH":          f"{p}js/",
         "LOGO_PATH":        f"{p}logo.svg",
+        "LOGO_SVG":         _load_inline_logo(),
     }
 
 
