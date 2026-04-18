@@ -4,9 +4,9 @@ VP      := $(VENV)/bin/python
 PIP     := $(VENV)/bin/pip
 PYTEST  := $(VENV)/bin/pytest
 
-# ── Environment ────────────────────────────────────────────────────────
+# ── Environment ────────────────────────────────────────────────────────────────
 
-$(VENV): requirements-dev.txt requirements.txt pyproject.toml
+$(VENV): requirements-dev.txt requirements.txt
 	$(PYTHON) -m venv $(VENV)
 	$(PIP) install --quiet --upgrade pip
 	$(PIP) install --quiet -r requirements-dev.txt
@@ -15,7 +15,7 @@ $(VENV): requirements-dev.txt requirements.txt pyproject.toml
 .PHONY: install
 install: $(VENV)  ## Create venv and install all dependencies
 
-# ── Pipeline ──────────────────────────────────────────────────────────
+# ── Pipeline ───────────────────────────────────────────────────────────────────
 
 .PHONY: download
 download: $(VENV)  ## Fetch upstream HTML bundle from ibiblio (idempotent)
@@ -32,13 +32,13 @@ verify: $(VENV)  ## Verify output text matches upstream (no content drift)
 .PHONY: build
 build: download inject verify  ## Full pipeline: download → inject → verify
 
-# ── Tests ──────────────────────────────────────────────────────────
+# ── Tests ──────────────────────────────────────────────────────────────────────
 
 .PHONY: test
 test: $(VENV)  ## Run the integration test suite
 	$(PYTEST) tests/ -v
 
-# ── Housekeeping ──────────────────────────────────────────────────────
+# ── Housekeeping ───────────────────────────────────────────────────────────────
 
 .PHONY: clean
 clean:  ## Remove built output (keeps upstream cache and venv)
