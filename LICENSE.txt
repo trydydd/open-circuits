@@ -1,10 +1,13 @@
-Creative Commons Attribution 4.0 International (CC BY 4.0)
+Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
 
-Copyright (C) 2000-2023  Tony R. Kuphaldt
-Overlay, build tooling, and navigation: Copyright (C) 2026  Hearth project contributors
+Original text copyright (C) 2000-2023  Tony R. Kuphaldt
+Published under Creative Commons Attribution 4.0 International (CC BY 4.0)
 
-This work is licensed under the Creative Commons Attribution 4.0 International
-License. You are free to:
+Overlay, build tooling, navigation, and packaging:
+Copyright (C) 2026  Hearth project contributors
+Published under Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+
+This derivative work as a whole is licensed under CC BY-SA 4.0. You are free to:
 
   Share  — copy and redistribute the material in any medium or format
   Adapt  — remix, transform, and build upon the material for any purpose,
@@ -13,13 +16,20 @@ License. You are free to:
 Under the following terms:
 
   Attribution — You must give appropriate credit, provide a link to the
-                license, and indicate if changes were made. You may do so
-                in any reasonable manner, but not in any way that suggests
-                the licensor endorses you or your use.
+                license, and indicate if changes were made.
+
+  ShareAlike  — If you remix, transform, or build upon the material, you
+                must distribute your contributions under the same CC BY-SA 4.0
+                license (or a compatible license).
 
   No additional restrictions — You may not apply legal terms or technological
                                measures that legally restrict others from doing
                                anything the license permits.
 
-Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
-Human-readable summary: https://creativecommons.org/licenses/by/4.0/
+Full license text: https://creativecommons.org/licenses/by-sa/4.0/legalcode
+Human-readable summary: https://creativecommons.org/licenses/by-sa/4.0/
+
+Note: The upstream text by Tony R. Kuphaldt remains CC BY 4.0 at its source
+(https://www.ibiblio.org/kuphaldt/electricCircuits/). The ShareAlike requirement
+applies to this packaged derivative work. Per Kuphaldt's CC BY 4.0 license,
+redistributors of this package must comply with CC BY-SA 4.0 terms.

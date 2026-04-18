@@ -8,7 +8,7 @@ A portable web edition of Tony R. Kuphaldt's *Lessons in Electric Circuits* (6 v
 
 ## Stack
 
-- **Python 3.9+** build pipeline
+- **Python 3.10+** build pipeline
 - **BeautifulSoup** for HTML injection
 - **GitHub Actions** for CI, Pages, and release
 - No JS framework — vanilla JS only
