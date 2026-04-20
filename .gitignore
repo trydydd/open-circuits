@@ -10,6 +10,5 @@ output/test-html/
 output/*.tar.gz
 output/*.zim
 
-# Upstream cache (downloaded at build time)
+# Upstream cache (extracted at build time; tarball is tracked via Git LFS)
 upstream/html/
-upstream/liechtml.tar.gz
