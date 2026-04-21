@@ -2,13 +2,19 @@
 """
 build_zim.py — Build a Kiwix ZIM file from the Open Circuits HTML output.
 
-Requires zimwriterfs to be installed, or pass --use-docker to run via the
+Requires zimwriterfs 3.4+ to be installed, or pass --use-docker to run via the
 official ghcr.io/openzim/zimwriterfs container (Docker must be available).
 
-    Ubuntu/Debian : sudo apt install zim-tools
-    macOS         : brew install zim-tools
-    Docker        : python build/build_zim.py --use-docker
-    Manual        : https://github.com/openzim/zim-tools
+WARNING: The Ubuntu/Debian apt package (zim-tools) ships zimwriterfs 3.2.0
+(libzim 8.x), which produces illustrations that kiwix-serve 3.8+ (libzim 9.x)
+cannot display. Use the static binary from download.openzim.org instead:
+
+    Linux  : https://download.openzim.org/release/zim-tools/
+             e.g. zim-tools_linux-x86_64-3.6.0.tar.gz
+             (set MAGIC=/usr/share/misc/magic.mgc when running)
+    macOS  : brew install zim-tools
+    Docker : python build/build_zim.py --use-docker
+    Manual : https://github.com/openzim/zim-tools
 
 Usage:
     python build/build_zim.py [--output PATH] [--use-docker]
