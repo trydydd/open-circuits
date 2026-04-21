@@ -256,6 +256,12 @@
     scrim.addEventListener('click', function () {
       setOpen(false);
     });
+
+    // Auto-close sidebar on mobile when tapping an in-page TOC anchor
+    sidebar.addEventListener('click', function (e) {
+      var link = e.target.closest('a.oc-toc__link');
+      if (link && !isDesktop()) setOpen(false);
+    });
   }
 
   /* ── 8. Active-volume indicator ──────────────────────────────────────── */
