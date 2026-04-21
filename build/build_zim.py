@@ -5,8 +5,8 @@ build_zim.py — Build a Kiwix ZIM file from the Open Circuits HTML output.
 Requires zimwriterfs to be installed, or pass --use-docker to run via the
 official ghcr.io/openzim/zimwriterfs container (Docker must be available).
 
-    Ubuntu/Debian : sudo apt install zimwriterfs
-    macOS         : brew install kiwix-tools
+    Ubuntu/Debian : sudo apt install zim-tools
+    macOS         : brew install zim-tools
     Docker        : python build/build_zim.py --use-docker
     Manual        : https://github.com/openzim/zim-tools
 
@@ -50,25 +50,33 @@ def load_meta() -> dict:
     if isinstance(desc, str):
         desc = " ".join(desc.split())  # collapse block-scalar newlines
 
+    long_desc = raw.get("LongDescription", "")
+    if isinstance(long_desc, str):
+        long_desc = " ".join(long_desc.split())
+
     return {
-        "title":       str(raw.get("Title",     "")),
-        "description": desc,
-        "language":    str(raw.get("Language",  "")),
-        "creator":     str(raw.get("Creator",   "")),
-        "publisher":   str(raw.get("Publisher", "")),
-        "tags":        str(raw.get("Tags",      "")),
-        "name":        str(raw.get("Name",      "open-circuits")),
+        "title":           str(raw.get("Title",     "")),
+        "description":     desc,
+        "longDescription": long_desc,
+        "language":        str(raw.get("Language",  "")),
+        "creator":         str(raw.get("Creator",   "")),
+        "publisher":       str(raw.get("Publisher", "")),
+        "tags":            str(raw.get("Tags",      "")),
+        "name":            str(raw.get("Name",      "open-circuits")),
     }
 
 
 def zimwriterfs_cmd(meta: dict, zim_out: Path,
-                    html_dir: str, meta_dir: str) -> list[str]:
-    """Return the zimwriterfs argument list (paths already resolved for caller)."""
-    return [
+                    html_dir: str, illustration: str) -> list[str]:
+    """Return the zimwriterfs argument list.
+
+    illustration must be a filename relative to html_dir (zimwriterfs 3.x
+    requirement). The caller is responsible for staging the file there.
+    """
+    cmd = [
         "zimwriterfs",
         "--welcome=index.html",
-        f"--illustration={meta_dir}/illustration.png",
-        f"--favicon={meta_dir}/favicon.png",
+        f"--illustration={illustration}",
         f"--language={meta['language']}",
         f"--title={meta['title']}",
         f"--description={meta['description']}",
@@ -76,22 +84,34 @@ def zimwriterfs_cmd(meta: dict, zim_out: Path,
         f"--publisher={meta['publisher']}",
         f"--tags={meta['tags']}",
         f"--name={meta['name']}",
-        html_dir,
-        str(zim_out),
     ]
+    if meta.get("longDescription"):
+        cmd.append(f"--longDescription={meta['longDescription']}")
+    cmd += [html_dir, str(zim_out)]
+    return cmd
+
+
+def _stage_illustration() -> Path:
+    """Copy favicon.png (48×48) into OUTPUT_HTML for zimwriterfs and return the dest path."""
+    dest = OUTPUT_HTML / "_zim_illustration.png"
+    shutil.copy2(ZIM_META / "favicon.png", dest)
+    return dest
 
 
 def build_local(meta: dict, zim_out: Path) -> None:
     """Build ZIM using a locally-installed zimwriterfs binary."""
-    cmd = zimwriterfs_cmd(meta, zim_out,
-                          str(OUTPUT_HTML), str(ZIM_META))
-    print("Running zimwriterfs ...")
-    print(f"  Source : {OUTPUT_HTML}")
-    print(f"  Output : {zim_out}")
-    result = subprocess.run(cmd, cwd=REPO_ROOT)
-    if result.returncode != 0:
-        print("Error: zimwriterfs failed.", file=sys.stderr)
-        sys.exit(1)
+    illus = _stage_illustration()
+    try:
+        cmd = zimwriterfs_cmd(meta, zim_out, str(OUTPUT_HTML), illus.name)
+        print("Running zimwriterfs ...")
+        print(f"  Source : {OUTPUT_HTML}")
+        print(f"  Output : {zim_out}")
+        result = subprocess.run(cmd, cwd=REPO_ROOT)
+        if result.returncode != 0:
+            print("Error: zimwriterfs failed.", file=sys.stderr)
+            sys.exit(1)
+    finally:
+        illus.unlink(missing_ok=True)
 
 
 def build_docker(meta: dict, zim_out: Path) -> None:
@@ -104,28 +124,28 @@ def build_docker(meta: dict, zim_out: Path) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     html_mount = "/html"
-    meta_mount = "/meta"
     out_mount  = "/out"
 
-    zim_args = zimwriterfs_cmd(meta, Path(f"{out_mount}/{zim_out.name}"),
-                                html_mount, meta_mount)
-
-    cmd = [
-        "docker", "run", "--rm",
-        "-v", f"{OUTPUT_HTML.resolve()}:{html_mount}:ro",
-        "-v", f"{ZIM_META.resolve()}:{meta_mount}:ro",
-        "-v", f"{out_dir}:{out_mount}",
-        ZIMWRITERFS_IMAGE,
-        *zim_args,
-    ]
-
-    print(f"Running zimwriterfs via Docker ({ZIMWRITERFS_IMAGE}) ...")
-    print(f"  Source : {OUTPUT_HTML}")
-    print(f"  Output : {zim_out}")
-    result = subprocess.run(cmd, cwd=REPO_ROOT)
-    if result.returncode != 0:
-        print("Error: zimwriterfs Docker container failed.", file=sys.stderr)
-        sys.exit(1)
+    illus = _stage_illustration()
+    try:
+        zim_args = zimwriterfs_cmd(meta, Path(f"{out_mount}/{zim_out.name}"),
+                                   html_mount, illus.name)
+        cmd = [
+            "docker", "run", "--rm",
+            "-v", f"{OUTPUT_HTML.resolve()}:{html_mount}:ro",
+            "-v", f"{out_dir}:{out_mount}",
+            ZIMWRITERFS_IMAGE,
+            *zim_args,
+        ]
+        print(f"Running zimwriterfs via Docker ({ZIMWRITERFS_IMAGE}) ...")
+        print(f"  Source : {OUTPUT_HTML}")
+        print(f"  Output : {zim_out}")
+        result = subprocess.run(cmd, cwd=REPO_ROOT)
+        if result.returncode != 0:
+            print("Error: zimwriterfs Docker container failed.", file=sys.stderr)
+            sys.exit(1)
+    finally:
+        illus.unlink(missing_ok=True)
 
 
 def main() -> None:
