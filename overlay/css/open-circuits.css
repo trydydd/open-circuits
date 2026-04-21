@@ -871,73 +871,83 @@ body.sidebar-closed .oc-sidebar {
 }
 
 /* =========================================================================
-   Homepage — volume grid
+   Homepage — volume grid (mobile-first)
    ========================================================================= */
 
-.oc-home h1:first-of-type {
-  font-size: 1.6rem;
+/* Direct class on the h1 avoids fighting h1:first-of-type specificity */
+.oc-home-title {
+  font-family: 'Chivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--oc-text);
   letter-spacing: 0;
   text-transform: none;
+  line-height: 1.2;
   margin-top: 0;
   margin-bottom: 0.3em;
 }
 
 .oc-home-tagline {
-  font-size: 1rem;
+  font-size: 0.975rem;
   color: var(--oc-text-2);
   max-width: 60ch;
-  margin: 0 0 var(--space-xl);
+  margin: 0 0 var(--space-lg);
 }
 
+/* 1 column on mobile; expands at wider viewports below */
 .oc-vol-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-md);
+  grid-template-columns: 1fr;
+  gap: var(--space-sm);
 }
 
-.oc-vol-card {
+/* Use a.oc-vol-card to beat the global `a { text-decoration: underline }` rule */
+a.oc-vol-card {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   padding: var(--space-md);
   background: var(--oc-surface);
   border: 1px solid var(--oc-border);
+  border-left: 3px solid var(--oc-accent-border);
   border-radius: var(--oc-radius);
   text-decoration: none;
-  color: inherit;
-  transition: border-color 0.12s, background 0.12s;
+  color: var(--oc-text);
+  transition: border-left-color 0.12s, background 0.12s;
 }
 
-.oc-vol-card:hover {
-  border-color: var(--oc-accent-border);
+a.oc-vol-card:hover,
+a.oc-vol-card:focus-visible {
   background: var(--oc-accent-bg);
-  color: inherit;
+  border-left-color: var(--oc-accent);
+  color: var(--oc-text);
   text-decoration: none;
+  outline: none;
 }
 
-.oc-vol-card:visited {
-  color: inherit;
+a.oc-vol-card:visited {
+  color: var(--oc-text);
+  text-decoration: none;
 }
 
 .oc-vol-num {
   display: block;
   font-family: 'Chivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--oc-accent);
+  margin-bottom: 1px;
 }
 
 .oc-vol-title {
   display: block;
   font-family: 'Chivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--oc-text);
-  line-height: 1.25;
+  line-height: 1.2;
   margin-bottom: 4px;
 }
 
@@ -949,15 +959,24 @@ body.sidebar-closed .oc-sidebar {
   color: var(--oc-text-2);
 }
 
-@media (max-width: 640px) {
+@media (min-width: 500px) {
+  .oc-home-title {
+    font-size: 1.75rem;
+  }
+
+  .oc-home-tagline {
+    margin-bottom: var(--space-xl);
+  }
+
   .oc-vol-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
   }
 }
 
-@media (max-width: 400px) {
+@media (min-width: 760px) {
   .oc-vol-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
