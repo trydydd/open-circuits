@@ -469,8 +469,8 @@ h1 + h1 + h1 + ul li {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   background: none;
   border: 1px solid rgb(72, 67, 63);
   border: 1px solid oklch(32% 0.012 75);
@@ -870,6 +870,26 @@ body.sidebar-closed .oc-sidebar {
     margin: 0;
     width: 100%;
     text-align: center;
+  }
+
+  /* Touch targets — 44px minimum for primary controls, 36px for dense lists */
+  .oc-bottomnav a {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  .oc-chnav__arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  .oc-toc__link {
+    display: flex;
+    align-items: center;
+    min-height: 36px;
   }
 }
 
