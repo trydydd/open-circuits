@@ -32,11 +32,17 @@ OUTPUT_HTML = OUTPUT_DIR / "html"
 
 
 def run(script: Path, *args: str) -> int:
+    """Run a build sub-script with the same Python interpreter and return its exit code."""
     result = subprocess.run([PYTHON, str(script), *args], cwd=REPO_ROOT)
     return result.returncode
 
 
 def git_version() -> str:
+    """Return the current git tag (e.g. 'v1.2.0') for release tarball naming.
+
+    Falls back to 'dev' for untagged commits, shallow clones, or environments
+    where git is unavailable — keeping build_all.py runnable outside a full repo.
+    """
     result = subprocess.run(
         ["git", "describe", "--tags", "--always"],
         capture_output=True, text=True, cwd=REPO_ROOT,
@@ -45,6 +51,7 @@ def git_version() -> str:
 
 
 def step(label: str) -> None:
+    """Print a visible section header to stdout."""
     print(f"\n{'═' * 64}")
     print(f"  {label}")
     print(f"{'═' * 64}")
@@ -90,7 +97,7 @@ def main() -> None:
             print("Error: build_zim.py failed.", file=sys.stderr)
             sys.exit(1)
     else:
-        print("build_zim.py not found — skipping ZIM build (Phase 6).")
+        print("build_zim.py not found — skipping ZIM build.")
 
     # ── Step 4: Create release tarball ───────────────────────────────────────
 

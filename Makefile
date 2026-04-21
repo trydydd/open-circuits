@@ -18,7 +18,7 @@ install: $(VENV)  ## Create venv and install all dependencies
 # ── Pipeline ───────────────────────────────────────────────────────────────────
 
 .PHONY: download
-download: $(VENV)  ## Fetch upstream HTML bundle from ibiblio (idempotent)
+download: $(VENV)  ## Extract upstream HTML bundle from LFS tarball (downloads from ibiblio as fallback)
 	$(VP) build/download_source.py
 
 .PHONY: inject

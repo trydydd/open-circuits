@@ -107,6 +107,9 @@ def _strip_volume_title(content: str) -> str:
         return content
 
     body_start = body_match.end()
+    # 500 bytes covers the opening of every Kuphaldt page; the volume title
+    # always appears within the first few tags. Searching the full body would
+    # risk matching legitimate occurrences deeper in the chapter text.
     window = content[body_start:body_start + 500]
     soup = BeautifulSoup(window, "html.parser")
     for tag in soup.find_all(["h1", "b"]):
@@ -121,6 +124,11 @@ def _strip_volume_title(content: str) -> str:
 
 
 def render_template(tmpl_path: Path, subs: dict[str, str]) -> str:
+    """Render a template by replacing {{KEY}} tokens with values from subs.
+
+    Unknown keys are left in the output as-is, which makes template errors
+    visible in the rendered HTML rather than silently empty.
+    """
     text = tmpl_path.read_text(encoding="utf-8")
     for key, val in subs.items():
         text = text.replace("{{" + key + "}}", val)
@@ -191,7 +199,8 @@ def inject_file(src: Path, dst: Path, depth: int) -> None:
         r"(</head>)", f"{viewport}\n{css_link}\n{js_tag}\n\\1", content, count=1, flags=re.IGNORECASE
     )
     if n == 0:
-        # No </head> — prepend to file as fallback
+        # No </head> found — shouldn't occur in Kuphaldt's files, but prepend
+        # as a safety net so the page still gets CSS and the viewport tag.
         content = f"{viewport}\n{css_link}\n{js_tag}\n{content}"
 
     # Strip inline style/bgcolor from <body> tag so our CSS theme isn't overridden

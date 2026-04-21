@@ -35,6 +35,7 @@ EXPECTED_VOLUMES = ["DC", "AC", "Semi", "Digital", "Ref", "Exper"]
 
 
 def run(script: Path, *args: str) -> subprocess.CompletedProcess:
+    """Run a build sub-script with the same Python interpreter."""
     return subprocess.run(
         [PYTHON, str(script), *args],
         cwd=REPO_ROOT,
@@ -42,6 +43,7 @@ def run(script: Path, *args: str) -> subprocess.CompletedProcess:
 
 
 def step(label: str) -> None:
+    """Print a visible section header to stdout."""
     print(f"\n── {label} {'─' * (60 - len(label))}")
 
 
@@ -57,6 +59,8 @@ def main() -> None:
 
     step("Checking upstream HTML")
 
+    # "any" rather than "all": a partial extraction still gets a re-run from
+    # download_source.py, which handles cleanup and full re-extraction itself.
     populated = any((UPSTREAM_HTML / v).is_dir() for v in EXPECTED_VOLUMES)
     if not populated:
         print("upstream/html/ not populated — running download_source.py ...")
@@ -91,7 +95,10 @@ def main() -> None:
 
     step("Post-build checks")
 
-    # Check attribution notice in root page (index.html, converted from index.htm)
+    # Check attribution notice in root page (index.html, converted from index.htm).
+    # This is a warning rather than a fatal error: a missing notice is a licensing
+    # concern, not a build-correctness one, and the CI workflow has a separate
+    # hard-fail grep for this in the workflow file itself.
     root_page = OUTPUT_HTML / "index.html"
     if root_page.exists():
         text = root_page.read_text(encoding="utf-8", errors="replace")
