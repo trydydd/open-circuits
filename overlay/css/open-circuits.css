@@ -492,6 +492,15 @@ h1 + h1 + h1 + ul li {
   outline-offset: 2px;
 }
 
+@keyframes oc-toggle-hint {
+  0%, 100% { box-shadow: none; border-color: rgb(72, 67, 63); border-color: oklch(32% 0.012 75); }
+  40%       { box-shadow: 0 0 0 3px var(--oc-accent-border); border-color: var(--oc-accent); color: var(--oc-accent); }
+}
+
+.oc-nav-toggle--hint {
+  animation: oc-toggle-hint 0.8s ease-out 1s both;
+}
+
 /* Logo — inline SVG replacing the O in "Open Circuits".
    Height matches Chivo's cap-height; vertical-align sits it on the baseline. */
 .oc-logo {
@@ -907,19 +916,20 @@ a.oc-vol-card {
   flex-direction: column;
   gap: 2px;
   padding: var(--space-md);
+  padding-right: calc(var(--space-md) + 1.5rem);
   background: var(--oc-surface);
   border: 1px solid var(--oc-border);
-  border-left: 3px solid var(--oc-accent-border);
   border-radius: var(--oc-radius);
   text-decoration: none;
   color: var(--oc-text);
-  transition: border-left-color 0.12s, background 0.12s;
+  position: relative;
+  transition: border-color 0.12s, background 0.12s;
 }
 
 a.oc-vol-card:hover,
 a.oc-vol-card:focus-visible {
   background: var(--oc-accent-bg);
-  border-left-color: var(--oc-accent);
+  border-color: var(--oc-accent-border);
   color: var(--oc-text);
   text-decoration: none;
   outline: none;
@@ -928,6 +938,24 @@ a.oc-vol-card:focus-visible {
 a.oc-vol-card:visited {
   color: var(--oc-text);
   text-decoration: none;
+}
+
+a.oc-vol-card::after {
+  content: '→';
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  font-family: 'Chivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 0.875rem;
+  line-height: 1;
+  color: var(--oc-text-2);
+  transition: color 0.12s, transform 0.12s;
+}
+
+a.oc-vol-card:hover::after,
+a.oc-vol-card:focus-visible::after {
+  color: var(--oc-accent);
+  transform: translateX(3px);
 }
 
 .oc-vol-num {
