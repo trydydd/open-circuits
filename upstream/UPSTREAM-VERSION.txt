@@ -1,6 +1,7 @@
 # Upstream Source Version
-# Written by build/download-source.sh — do not edit manually.
+# Written by build/download_source.py — do not edit manually.
 
 SOURCE_URL=https://www.ibiblio.org/kuphaldt/electricCircuits/liechtml.tar.gz
-SNAPSHOT_DATE=2026-04-15
+EXTRACTION_DATE=2026-04-21
+SOURCE=Git LFS
 TARBALL=liechtml.tar.gz

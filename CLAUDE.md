@@ -1,5 +1,9 @@
 # Open Circuits — Claude Context
 
+## Working conventions
+
+- **No Claude session links** in PR bodies or commit messages.
+
 ## Project
 
 A portable web edition of Tony R. Kuphaldt's *Lessons in Electric Circuits* (6 volumes: DC, AC, Semiconductors, Digital, Reference, Experiments). Packages as static HTML site and ZIM file for offline/Kiwix use. Part of the Hearth offline community hub project.
