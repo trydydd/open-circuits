@@ -111,7 +111,7 @@ class TestPhase2Download:
 
     def test_upstream_version_txt_has_snapshot_date(self):
         text = (REPO_ROOT / "upstream" / "UPSTREAM-VERSION.txt").read_text()
-        assert re.search(r"^SNAPSHOT_DATE=\d{4}-\d{2}-\d{2}", text, re.MULTILINE)
+        assert re.search(r"^EXTRACTION_DATE=\d{4}-\d{2}-\d{2}", text, re.MULTILINE)
 
     def test_download_is_idempotent(self):
         result = run(REPO_ROOT / "build" / "download_source.py")

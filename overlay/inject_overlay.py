@@ -41,6 +41,7 @@ LOGO_SRC = OVERLAY_DIR / "logo.svg"
 TEMPLATE_KEYS = [
     "INDEX_PATH",
     "VOL_DC", "VOL_AC", "VOL_SEMI", "VOL_DIGITAL", "VOL_REF", "VOL_EXPER",
+    "VOL_DC_IDX", "VOL_AC_IDX", "VOL_SEMI_IDX", "VOL_DIGITAL_IDX", "VOL_REF_IDX", "VOL_EXPER_IDX",
     "LICENSE_PATH", "ATTRIBUTION_PATH",
     "JS_PATH", "LOGO_PATH", "LOGO_SVG",
 ]
@@ -76,6 +77,12 @@ def resolve_paths(depth: int) -> dict[str, str]:
         "JS_PATH":          f"{p}js/",
         "LOGO_PATH":        f"{p}logo.svg",
         "LOGO_SVG":         _load_inline_logo(),
+        "VOL_DC_IDX":       f"{p}DC/index.html",
+        "VOL_AC_IDX":       f"{p}AC/index.html",
+        "VOL_SEMI_IDX":     f"{p}Semi/index.html",
+        "VOL_DIGITAL_IDX":  f"{p}Digital/index.html",
+        "VOL_REF_IDX":      f"{p}Ref/index.html",
+        "VOL_EXPER_IDX":    f"{p}Exper/index.html",
     }
 
 
@@ -210,28 +217,45 @@ def inject_file(src: Path, dst: Path, depth: int) -> None:
     content = _strip_local_binary_links(content)
     content = _strip_volume_title(content)
 
-    # Rewrite page title using meta description (most chapters have a meaningful one),
-    # falling back to the colophon-style upstream title, then bare "Open Circuits".
-    chapter_title = _extract_chapter_title(content)
-    if chapter_title:
+    # Homepage: replace the entire body content with a curated template so we
+    # don't carry forward any of the upstream project-admin prose.
+    is_homepage = (src.name.lower() == "index.htm" and depth == 0)
+    if is_homepage:
+        index_body = render_template(TEMPLATES_DIR / "index-body.html", subs)
+        content = re.sub(
+            r'(<body[^>]*>).*?(</body>)',
+            lambda m: m.group(1) + "\n" + index_body + "\n" + m.group(2),
+            content, count=1, flags=re.IGNORECASE | re.DOTALL,
+        )
         content = re.sub(
             r"<title>[^<]*</title>",
-            f"<title>Open Circuits \u2014 {chapter_title}</title>",
+            "<title>Open Circuits \u2014 Lessons in Electric Circuits</title>",
             content, count=1, flags=re.IGNORECASE,
         )
-    else:
-        # Try to extract a meaningful subtitle from "... -- Chapter N: Title"
-        content = re.sub(
-            r"<title>Lessons In Electric Circuits[^<]*?:\s*([^<]+)</title>",
-            "<title>Open Circuits \u2014 \\g<1></title>",
-            content, flags=re.IGNORECASE,
-        )
-        # Final fallback
-        content = re.sub(
-            r"<title>Lessons In Electric Circuits[^<]*</title>",
-            "<title>Open Circuits</title>",
-            content, flags=re.IGNORECASE,
-        )
+
+    # Rewrite page title using meta description (most chapters have a meaningful one),
+    # falling back to the colophon-style upstream title, then bare "Open Circuits".
+    if not is_homepage:
+        chapter_title = _extract_chapter_title(content)
+        if chapter_title:
+            content = re.sub(
+                r"<title>[^<]*</title>",
+                f"<title>Open Circuits \u2014 {chapter_title}</title>",
+                content, count=1, flags=re.IGNORECASE,
+            )
+        else:
+            # Try to extract a meaningful subtitle from "... -- Chapter N: Title"
+            content = re.sub(
+                r"<title>Lessons In Electric Circuits[^<]*?:\s*([^<]+)</title>",
+                "<title>Open Circuits \u2014 \\g<1></title>",
+                content, flags=re.IGNORECASE,
+            )
+            # Final fallback
+            content = re.sub(
+                r"<title>Lessons In Electric Circuits[^<]*</title>",
+                "<title>Open Circuits</title>",
+                content, flags=re.IGNORECASE,
+            )
 
     # Add lang="en" to <html> tag if not already present
     content = re.sub(
