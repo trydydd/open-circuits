@@ -133,24 +133,53 @@ def _strip_download_sections(content: str) -> str:
 
 
 def _strip_local_binary_links(content: str) -> str:
-    """De-link <a href> tags pointing to local binary or archive files.
+    """De-link <a href> tags pointing to local binary, source, or archive files.
 
     Removes the anchor wrapper but keeps the visible link text. Only affects
-    relative hrefs ending in known binary extensions — external URLs, fragment
-    links, and domain-like relative paths (e.g. photochemistry.epfl.ch/…) are
-    left untouched.
+    relative hrefs ending in known non-web extensions. External URLs (https?://),
+    fragment links (#), and mailto: links are left untouched.
     """
     return re.sub(
         r'<a\b[^>]*\bhref=["\']'
         r'(?!https?://|#|mailto:)'
-        r'(?![a-z0-9-]+(?:\.[a-z0-9-]+)+/)'
-        r'[^"\']*\.(pdf|ps\.gz|ps|tar\.gz|tar|exe|zip|ovl)'
+        r'[^"\']*\.(pdf|ps\.gz|ps|eps|tar\.gz|tar|exe|zip|ovl|sed|dvi|sml)'
         r'["\'][^>]*>'
         r'(.*?)'
         r'</a\s*>',
         r'\2',
         content,
         flags=re.IGNORECASE | re.DOTALL,
+    )
+
+
+def _strip_upstream_css_links(content: str) -> str:
+    """Remove <link rel="stylesheet"> tags pointing to local upstream CSS files.
+
+    We inject our own stylesheet, so any local CSS references from the upstream
+    (e.g. liec.css) are dead links in our output and should be removed.
+    External stylesheet URLs (https?://) are left untouched.
+    """
+    return re.sub(
+        r'<link\b[^>]*\brel=["\']stylesheet["\'][^>]*\bhref=["\'](?!https?://)[^"\']+["\'][^>]*/?>',
+        '',
+        content,
+        flags=re.IGNORECASE,
+    )
+
+
+def _fix_cross_volume_links(content: str, src: Path) -> str:
+    """Fix broken cross-volume href="DC_A3.html" links in non-DC pages.
+
+    AC/bye_bib.html links to DC_A3.html (the CC BY licence) without a
+    proper relative path. Correct it to ../DC/DC_A3.html for pages
+    outside the DC volume.
+    """
+    if src.parent.name == "DC":
+        return content
+    return re.sub(
+        r'(?i)(href=["\'])DC_A3\.html(["\'])',
+        r'\g<1>../DC/DC_A3.html\g<2>',
+        content,
     )
 
 
@@ -215,6 +244,8 @@ def inject_file(src: Path, dst: Path, depth: int) -> None:
     content = _strip_badge_links(content)
     content = _strip_download_sections(content)
     content = _strip_local_binary_links(content)
+    content = _strip_upstream_css_links(content)
+    content = _fix_cross_volume_links(content, src)
     content = _strip_volume_title(content)
 
     # Homepage: replace the entire body content with a curated template so we
@@ -386,7 +417,9 @@ def main() -> None:
     html_suffixes = {".html", ".htm"}
     asset_files = [
         f for f in input_dir.rglob("*")
-        if f.is_file() and f.suffix.lower() not in html_suffixes
+        if f.is_file()
+        and f.suffix.lower() not in html_suffixes
+        and not f.name.endswith("~")   # exclude editor backup files
     ]
     for src in asset_files:
         dst = output_dir / src.relative_to(input_dir)
