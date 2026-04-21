@@ -43,3 +43,11 @@ jobs:
           name: open-circuits-html
           path: output/html/
           retention-days: 7
+
+      - name: Upload ZIM artifact (if built)
+        uses: actions/upload-artifact@v4
+        if: hashFiles('output/open-circuits.zim') != ''
+        with:
+          name: open-circuits-zim
+          path: output/open-circuits.zim
+          retention-days: 7
