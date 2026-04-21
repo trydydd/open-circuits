@@ -904,8 +904,8 @@ body.sidebar-closed .oc-sidebar {
    Homepage — volume grid (mobile-first)
    ========================================================================= */
 
-/* Direct class on the h1 avoids fighting h1:first-of-type specificity */
-.oc-home-title {
+/* h1.oc-home-title beats h1:first-of-type (both 0,1,1) via source order */
+h1.oc-home-title {
   font-family: 'Chivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 1.5rem;
   font-weight: 700;
@@ -968,7 +968,7 @@ a.oc-vol-card:visited {
 }
 
 a.oc-vol-card::after {
-  content: '→';
+  content: '\2192';
   position: absolute;
   top: var(--space-md);
   right: var(--space-md);
@@ -1015,7 +1015,7 @@ a.oc-vol-card:focus-visible::after {
 }
 
 @media (min-width: 500px) {
-  .oc-home-title {
+  h1.oc-home-title {
     font-size: 1.75rem;
   }
 
@@ -1030,7 +1030,7 @@ a.oc-vol-card:focus-visible::after {
 }
 
 @media (min-width: 760px) {
-  .oc-home-title {
+  h1.oc-home-title {
     font-size: 2rem;
   }
 
