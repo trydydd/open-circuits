@@ -230,6 +230,7 @@ body {
   color: var(--oc-text);
   background: var(--oc-bg);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   transition: padding-left 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -914,7 +915,7 @@ body.sidebar-closed .oc-sidebar {
 a.oc-vol-card {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
   padding: var(--space-md);
   padding-right: calc(var(--space-md) + 1.5rem);
   background: var(--oc-surface);
@@ -923,7 +924,7 @@ a.oc-vol-card {
   text-decoration: none;
   color: var(--oc-text);
   position: relative;
-  transition: border-color 0.12s, background 0.12s;
+  transition: border-color 0.12s, background 0.12s, transform 0.08s;
 }
 
 a.oc-vol-card:hover,
@@ -933,6 +934,12 @@ a.oc-vol-card:focus-visible {
   color: var(--oc-text);
   text-decoration: none;
   outline: none;
+}
+
+a.oc-vol-card:active {
+  background: var(--oc-accent-bg);
+  border-color: var(--oc-accent-border);
+  transform: scale(0.99);
 }
 
 a.oc-vol-card:visited {
@@ -966,7 +973,7 @@ a.oc-vol-card:focus-visible::after {
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--oc-accent);
-  margin-bottom: 1px;
+  margin-bottom: 2px;
 }
 
 .oc-vol-title {
@@ -976,7 +983,7 @@ a.oc-vol-card:focus-visible::after {
   font-weight: 700;
   color: var(--oc-text);
   line-height: 1.2;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .oc-vol-desc {
@@ -1003,8 +1010,28 @@ a.oc-vol-card:focus-visible::after {
 }
 
 @media (min-width: 760px) {
+  .oc-home-title {
+    font-size: 2rem;
+  }
+
   .oc-vol-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* =========================================================================
+   Accessibility — reduced motion
+   ========================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }
 
