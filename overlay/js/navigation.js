@@ -256,6 +256,12 @@
     scrim.addEventListener('click', function () {
       setOpen(false);
     });
+
+    // Auto-close sidebar on mobile when tapping an in-page TOC anchor
+    sidebar.addEventListener('click', function (e) {
+      var link = e.target.closest('a.oc-toc__link');
+      if (link && !isDesktop()) setOpen(false);
+    });
   }
 
   /* ── 8. Active-volume indicator ──────────────────────────────────────── */
@@ -291,6 +297,19 @@
     hideImageNav();
     setupScrollSpy(tocItems);
     setupToggle();
+
+    // First-visit hint: briefly highlight the toggle so users discover the sidebar
+    if (!localStorage.getItem('oc-nav-hinted')) {
+      var hintToggle = document.getElementById(TOGGLE_ID);
+      if (hintToggle) {
+        hintToggle.classList.add('oc-nav-toggle--hint');
+        hintToggle.addEventListener('animationend', function onHint() {
+          hintToggle.classList.remove('oc-nav-toggle--hint');
+          hintToggle.removeEventListener('animationend', onHint);
+          localStorage.setItem('oc-nav-hinted', '1');
+        });
+      }
+    }
   }
 
   if (document.readyState === 'loading') {
