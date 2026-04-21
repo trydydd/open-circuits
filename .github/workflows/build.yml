@@ -22,8 +22,8 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      - name: Install zimwriterfs (if available)
-        run: sudo apt-get install -y zimwriterfs 2>/dev/null || echo "zimwriterfs not available — ZIM step will be skipped"
+      - name: Install zim-tools (if available)
+        run: sudo apt-get install -y zim-tools 2>/dev/null || echo "zim-tools not available — ZIM step will be skipped"
 
       - name: Build
         run: python build/build_all.py --skip-integrity
@@ -42,4 +42,12 @@ jobs:
         with:
           name: open-circuits-html
           path: output/html/
+          retention-days: 7
+
+      - name: Upload ZIM artifact (if built)
+        uses: actions/upload-artifact@v4
+        if: hashFiles('output/open-circuits.zim') != ''
+        with:
+          name: open-circuits-zim
+          path: output/open-circuits.zim
           retention-days: 7
