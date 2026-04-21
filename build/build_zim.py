@@ -201,6 +201,24 @@ def main() -> None:
 
     size_mb = zim_out.stat().st_size / (1024 * 1024)
     print(f"ZIM created: {zim_out} ({size_mb:.1f} MB)")
+
+    # ── zimcheck ──────────────────────────────────────────────────────────────
+    # Run structural checks we control. Internal-URL check (-U) is skipped
+    # because upstream HTML links to .pdf volumes we intentionally don't ship.
+
+    if shutil.which("zimcheck"):
+        print("Running zimcheck ...")
+        result = subprocess.run(
+            ["zimcheck", "-C", "-I", "-M", "-P", "-0", str(zim_out)],
+            cwd=REPO_ROOT,
+        )
+        if result.returncode != 0:
+            print("Error: zimcheck failed.", file=sys.stderr)
+            sys.exit(1)
+        print("zimcheck passed.")
+    else:
+        print("zimcheck not found — skipping ZIM validation.")
+
     print("Done.")
 
 

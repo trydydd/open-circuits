@@ -399,7 +399,8 @@ def main() -> None:
 
     if CSS_SRC.is_dir():
         dst_css = output_dir / "css"
-        shutil.copytree(CSS_SRC, dst_css, dirs_exist_ok=True)
+        shutil.copytree(CSS_SRC, dst_css, dirs_exist_ok=True,
+                        ignore=shutil.ignore_patterns(".gitkeep"))
         print(f"Copied CSS → {dst_css}/")
 
     js_files = [f for f in JS_SRC.iterdir()
