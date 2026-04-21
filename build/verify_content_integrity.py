@@ -39,8 +39,8 @@ REPO_ROOT = Path(__file__).parent.parent
 def extract_tokens(path: Path) -> list[str]:
     """
     Return a list of whitespace-delimited text tokens from an HTML file,
-    with .oc-header, .oc-footer, upstream badge links, and the redundant
-    volume title heading removed.
+    with .oc-header, .oc-footer, upstream badge links, download sections,
+    local binary download links, and the redundant volume title heading removed.
 
     Tokens (split on whitespace) rather than full text are compared because
     Kuphaldt's upstream HTML has inconsistent whitespace around tags and
@@ -55,9 +55,26 @@ def extract_tokens(path: Path) -> list[str]:
     near the top of the body, and limiting the search avoids false matches
     deeper in chapter text.
     """
-    soup = BeautifulSoup(
-        path.read_text(encoding="utf-8", errors="replace"), "html.parser"
+    content = path.read_text(encoding="utf-8", errors="replace")
+    # Mirror inject_overlay._strip_download_sections
+    content = re.sub(
+        r'<!--!{5,}-->\s*<hr>\s*<h2>\s*Download\s+printable\s+versions\b'
+        r'.*?(?=<hr>\s*<a\b[^>]*>Back\s+to\b)',
+        '', content, flags=re.IGNORECASE | re.DOTALL,
     )
+    content = re.sub(
+        r'<!--!{5,}-->\s*<hr>\s*<h2>\s*(?:Download|Some\s+of\s+the\s+free\s+software)\b'
+        r'.*?(?=<!--!{5,}-->)',
+        '', content, flags=re.IGNORECASE | re.DOTALL,
+    )
+    # Mirror inject_overlay._strip_local_binary_links (de-link, keep text)
+    content = re.sub(
+        r'<a\b[^>]*\bhref=["\'](?!https?://|#|mailto:)'
+        r'(?![a-z0-9-]+(?:\.[a-z0-9-]+)+/)'
+        r'[^"\']*\.(pdf|ps\.gz|ps|tar\.gz|tar|exe|zip|ovl)["\'][^>]*>(.*?)</a\s*>',
+        r'\2', content, flags=re.IGNORECASE | re.DOTALL,
+    )
+    soup = BeautifulSoup(content, "html.parser")
     for injected in soup.find_all(class_=["oc-header", "oc-footer"]):
         injected.decompose()
     for anchor in soup.find_all("a", href=True):
