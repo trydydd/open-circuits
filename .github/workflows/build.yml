@@ -22,10 +22,16 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      - name: Install zim-tools (if available)
-        run: sudo apt-get install -y zim-tools 2>/dev/null || echo "zim-tools not available — ZIM step will be skipped"
+      - name: Install zim-tools 3.6.0
+        run: |
+          curl -L https://download.openzim.org/release/zim-tools/zim-tools_linux-x86_64-3.6.0.tar.gz \
+            -o /tmp/zim-tools.tar.gz
+          tar -xf /tmp/zim-tools.tar.gz -C /tmp
+          echo "/tmp/zim-tools_linux-x86_64-3.6.0" >> $GITHUB_PATH
 
       - name: Build
+        env:
+          MAGIC: /usr/share/misc/magic.mgc
         run: python build/build_all.py --skip-integrity
 
       - name: Verify — no external URLs in output
