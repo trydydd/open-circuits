@@ -66,8 +66,8 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      - name: Install zimwriterfs
-        run: sudo apt-get install -y zimwriterfs
+      - name: Install zim-tools
+        run: sudo apt-get install -y zim-tools
 
       - name: Download HTML output
         uses: actions/download-artifact@v4
