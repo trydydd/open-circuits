@@ -89,6 +89,64 @@ def _strip_badge_links(content: str) -> str:
     )
 
 
+def _strip_download_sections(content: str) -> str:
+    """Remove download link sections from volume index pages and the main index.
+
+    Volume index pages have two sections delimited by <!--!!!--> comment markers:
+    'Download printable versions of this volume' (PDF/PostScript) and
+    'Download source files for this volume' (tar archives). Both are removed,
+    leaving only the 'Back to Master Index' link that follows.
+
+    The main index (index.htm) contains several download/free-software sections
+    similarly delimited. All are removed; the ibiblio hosted-badge link that
+    follows is handled separately by _strip_badge_links.
+    """
+    # Volume index: strip from <!--!!!--> before "Download printable versions"
+    # through end of source section, stopping before the trailing <hr> + "Back to".
+    content = re.sub(
+        r'<!--!{5,}-->\s*<hr>\s*<h2>\s*Download\s+printable\s+versions\b'
+        r'.*?'
+        r'(?=<hr>\s*<a\b[^>]*>Back\s+to\b)',
+        '',
+        content,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    # Main index: each download/software section starts with <!--!!!--> + <hr> + <h2>.
+    # Strip each such section up to (but not including) the next <!--!!!--> marker.
+    # Repeated substitution cascades through all adjacent sections in one pass.
+    content = re.sub(
+        r'<!--!{5,}-->\s*<hr>\s*<h2>\s*(?:Download|Some\s+of\s+the\s+free\s+software)\b'
+        r'.*?'
+        r'(?=<!--!{5,}-->)',
+        '',
+        content,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    return content
+
+
+def _strip_local_binary_links(content: str) -> str:
+    """De-link <a href> tags pointing to local binary or archive files.
+
+    Removes the anchor wrapper but keeps the visible link text. Only affects
+    relative hrefs ending in known binary extensions — external URLs, fragment
+    links, and domain-like relative paths (e.g. photochemistry.epfl.ch/…) are
+    left untouched.
+    """
+    return re.sub(
+        r'<a\b[^>]*\bhref=["\']'
+        r'(?!https?://|#|mailto:)'
+        r'(?![a-z0-9-]+(?:\.[a-z0-9-]+)+/)'
+        r'[^"\']*\.(pdf|ps\.gz|ps|tar\.gz|tar|exe|zip|ovl)'
+        r'["\'][^>]*>'
+        r'(.*?)'
+        r'</a\s*>',
+        r'\2',
+        content,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+
+
 def _extract_chapter_title(content: str) -> str | None:
     """Extract chapter title from <meta name="description" content="...">."""
     m = re.search(
@@ -148,6 +206,8 @@ def inject_file(src: Path, dst: Path, depth: int) -> None:
 
     content = src.read_text(encoding="utf-8", errors="replace")
     content = _strip_badge_links(content)
+    content = _strip_download_sections(content)
+    content = _strip_local_binary_links(content)
     content = _strip_volume_title(content)
 
     # Rewrite page title using meta description (most chapters have a meaningful one),
