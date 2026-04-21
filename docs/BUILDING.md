@@ -6,10 +6,31 @@
 |------|---------|---------|
 | `python3` (3.10+) | All build scripts | `sudo apt install python3` / standard on macOS |
 | `make` | Makefile shortcuts | `sudo apt install make` / standard on macOS |
+| `git-lfs` | Fetching the upstream tarball | `sudo apt install git-lfs` / `brew install git-lfs` |
 | `beautifulsoup4` | HTML injection (`inject_overlay.py`) | installed via `make install` |
 | `zimwriterfs` | ZIM packaging (optional) | see below |
 
 The Python dependencies are pinned in `requirements.txt` and installed into a local virtualenv by `make install`. No system-level Python packages are needed.
+
+### Git LFS setup
+
+The upstream source tarball (`upstream/liechtml.tar.gz`, ~36 MB) is stored in Git LFS. After cloning, pull it with:
+
+```sh
+git lfs install   # one-time per machine
+git lfs pull
+```
+
+If `git-lfs` is not installed, `download_source.py` will fall back to downloading the tarball directly from ibiblio.org — the build still works, but you lose the offline/reproducible guarantee.
+
+**To update the vendored tarball** (e.g. after a new upstream release):
+
+```sh
+python build/download_source.py --fetch
+git add upstream/liechtml.tar.gz
+git commit -m "chore: update upstream tarball"
+git push
+```
 
 ### Installing zimwriterfs (optional)
 
@@ -38,7 +59,7 @@ If `zimwriterfs` is not installed, `build/build_zim.py` prints an install hint a
 # 1. Create virtualenv and install Python dependencies
 make install
 
-# 2. Download upstream HTML from ibiblio (~36 MB, cached after first run)
+# 2. Extract upstream HTML from the LFS tarball → upstream/html/
 make download
 
 # 3. Inject overlay (CSS, header, footer) → output/html/
@@ -78,7 +99,8 @@ python build/build_html.py
 
 | Script | Flag | Effect |
 |--------|------|--------|
-| `download_source.py` | `--force` | Re-download even if `upstream/html/` is populated |
+| `download_source.py` | `--force` | Re-extract even if `upstream/html/` is populated |
+| `download_source.py` | `--fetch` | Download a fresh copy from ibiblio, replacing the local tarball (use to update the vendored LFS file) |
 | `build_html.py` | `--clean` | Delete `output/html/` before building |
 | `build_html.py` | `--skip-integrity` | Skip text-content integrity check (faster iteration) |
 | `build_zim.py` | `--output PATH` | Write ZIM to a custom path |
@@ -159,4 +181,4 @@ make clean
 make clean-all
 ```
 
-The `upstream/html/` download cache is preserved by `make clean` intentionally — re-downloading 36 MB on every clean would be slow. Use `python build/download_source.py --force` to refresh it.
+The `upstream/html/` extracted tree is preserved by `make clean` intentionally — re-extracting on every clean is unnecessary and slow. Use `python build/download_source.py --force` to re-extract from the LFS tarball.

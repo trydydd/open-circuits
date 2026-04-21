@@ -41,6 +41,19 @@ def extract_tokens(path: Path) -> list[str]:
     Return a list of whitespace-delimited text tokens from an HTML file,
     with .oc-header, .oc-footer, upstream badge links, and the redundant
     volume title heading removed.
+
+    Tokens (split on whitespace) rather than full text are compared because
+    Kuphaldt's upstream HTML has inconsistent whitespace around tags and
+    line endings that don't reflect content differences. Token equality is
+    sufficient to catch any actual text insertion or deletion.
+
+    <title> tags are stripped because inject_overlay.py rewrites them, so
+    they will always differ between upstream and output — that's expected.
+
+    The 500-byte body window for volume-title stripping mirrors the same
+    logic in inject_overlay._strip_volume_title: the title always appears
+    near the top of the body, and limiting the search avoids false matches
+    deeper in chapter text.
     """
     soup = BeautifulSoup(
         path.read_text(encoding="utf-8", errors="replace"), "html.parser"

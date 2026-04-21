@@ -34,6 +34,7 @@ REPO_ROOT = Path(__file__).parent.parent
 
 
 def progress_hook(block_num: int, block_size: int, total_size: int) -> None:
+    """urllib.request.urlretrieve callback that prints a progress bar to stdout."""
     if total_size <= 0:
         return
     downloaded = min(block_num * block_size, total_size)
@@ -43,6 +44,7 @@ def progress_hook(block_num: int, block_size: int, total_size: int) -> None:
 
 
 def download_tarball(tarball: Path) -> None:
+    """Download the upstream tarball from ibiblio to disk. Exits non-zero on failure."""
     print(f"Downloading {SOURCE_URL} ...")
     tarball.parent.mkdir(parents=True, exist_ok=True)
     try:
@@ -56,6 +58,7 @@ def download_tarball(tarball: Path) -> None:
 
 
 def extract_tarball(tarball: Path, html_dir: Path) -> None:
+    """Extract the tarball into html_dir, replacing any existing contents. Exits non-zero on failure."""
     print(f"Extracting to {html_dir} ...")
     if html_dir.exists():
         shutil.rmtree(html_dir)
