@@ -66,8 +66,12 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      - name: Install zim-tools
-        run: sudo apt-get install -y zim-tools
+      - name: Install zim-tools 3.6.0
+        run: |
+          curl -L https://download.openzim.org/release/zim-tools/zim-tools_linux-x86_64-3.6.0.tar.gz \
+            -o /tmp/zim-tools.tar.gz
+          tar -xf /tmp/zim-tools.tar.gz -C /tmp
+          echo "/tmp/zim-tools_linux-x86_64-3.6.0" >> $GITHUB_PATH
 
       - name: Download HTML output
         uses: actions/download-artifact@v4
@@ -76,6 +80,8 @@ jobs:
           path: output/html/
 
       - name: Build ZIM
+        env:
+          MAGIC: /usr/share/misc/magic.mgc
         run: python build/build_zim.py
 
       - name: Upload ZIM
