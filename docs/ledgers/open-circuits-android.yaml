@@ -1,0 +1,1093 @@
+ledger:
+  project: open-circuits-android
+  scope: |
+    Native Kotlin Android wrapper that bundles the open-circuits HTML
+    output and ships to Google Play, F-Droid, IzzyOnDroid, and GitHub
+    Releases. Strict offline. No Google Play Services. No tracking. No
+    INTERNET permission.
+  source_of_truth:
+    plan: docs/ledgers/mobile-app-plan.md  # lives in the open-circuits repo
+    upstream_repo: open-circuits
+  package_id: org.hearth.circuits
+  app_name: Open Circuits
+  min_sdk: 26
+  target_sdk: 35
+  compile_sdk: 35
+  kotlin: "2.1.x"
+  agp: "8.7.x"
+  jdk: 21
+  test_runners:
+    unit: JUnit4 + Robolectric
+    instrumented: AndroidX Test + Espresso
+    lint: gradle :app:lint{Flavor}{BuildType}
+    reproducible: F-Droid apkdiff or sha256 of two clean builds
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Global guardrails — apply to every task. Violations fail review automatically.
+# ──────────────────────────────────────────────────────────────────────────────
+guardrails:
+  positive:
+    - |
+      The app must run with Wi-Fi and cellular OFF for all flows.
+      Connectivity is never required.
+    - |
+      AndroidManifest.xml must NOT declare android.permission.INTERNET.
+      Lint must enforce this — a custom lint rule, not just an
+      android:usesCleartextTraffic check.
+    - |
+      The play and foss flavors must produce APKs that differ ONLY in
+      build metadata (version code, signing key) — no source-level
+      branching by flavor. Verified by a test that diffs decompiled
+      class outputs.
+    - All native code is Kotlin. No Java sources in app/src/.
+    - |
+      All user-visible state lives in the WebView (localStorage). No
+      SharedPreferences, no Room, no DataStore in v1.
+    - |
+      Reproducible builds — pinned AGP, pinned Kotlin, pinned Gradle
+      wrapper version, no env-var-dependent build logic, no
+      timestamps embedded in resources.
+    - |
+      Every PR adds tests first — JUnit / Robolectric for unit logic,
+      Espresso for WebView behavior, custom assertion for manifest
+      contents.
+  taboos:
+    - |
+      NO Google Play Services dependency (com.google.android.gms.*)
+      in any form, in any flavor.
+    - |
+      NO Firebase, Crashlytics, Analytics, Performance, Remote
+      Config, Cloud Messaging.
+    - |
+      NO third-party analytics or telemetry SDKs — Sentry, Bugsnag,
+      Mixpanel, Amplitude, etc.
+    - |
+      NO ads SDKs — AdMob, AppLovin, Unity Ads, etc.
+    - NO INTERNET permission. NO ACCESS_NETWORK_STATE permission.
+    - |
+      NO Capacitor, Cordova, Flutter, React Native, Ionic, or other
+      hybrid / cross-platform framework. Pure native Kotlin only.
+    - NO Java sources. NO mixed-language module.
+    - |
+      NO Kotlin coroutines, Flow, RxJava. The WebView wrapper doesn't
+      need async machinery; adding it invites scope creep.
+    - |
+      NO Room, SQLDelight, ObjectBox, Realm, DataStore, or any
+      persistence library. localStorage in the WebView covers it.
+    - |
+      NO Hilt, Dagger, Koin, or any DI framework. Tiny app; manual
+      wiring.
+    - |
+      NO Compose, AppCompat themes that require Compose. Use a
+      vanilla Material 3 theme via XML.
+    - |
+      NO splash screen library. Use the Android 12+ SplashScreen API
+      (already in core-splashscreen) or skip a splash entirely.
+    - NO BuildConfig fields that vary by environment.
+    - |
+      NO ProGuard / R8 rules that obscure or rename WebView
+      interfaces. The bundled JS expects stable names; minimal R8
+      only.
+    - |
+      NO third-party launcher icon generators that pull in transitive
+      services. Adaptive icons are pure XML + PNG.
+    - |
+      NO emojis in committed source, manifest strings, fastlane
+      metadata, or commit messages.
+    - |
+      NO Claude session links or AI-generation footers in commits, PR
+      bodies, or fastlane changelogs.
+    - |
+      NO version-name suffixes like -beta, -rc, -dirty. Versions are
+      SemVer (1.0.0, 1.0.1, 1.1.0).
+    - |
+      NO content forking. The HTML always comes from a tagged
+      open-circuits release tarball, never edited in this repo.
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Tasks
+# ──────────────────────────────────────────────────────────────────────────────
+tasks:
+
+  - id: B1
+    title: Repo bootstrap — Gradle, AGP, Kotlin, version catalog, .gitignore
+    intent: |
+      Establish the build skeleton for an Android project that
+      compiles to an empty APK. Pins all toolchain versions for
+      reproducibility.
+    estimated_complexity: S
+    dependencies: []
+    files_out_new:
+      - settings.gradle.kts
+      - build.gradle.kts
+      - gradle/libs.versions.toml
+      - gradle.properties
+      - gradle/wrapper/gradle-wrapper.properties
+      - gradle/wrapper/gradle-wrapper.jar
+      - gradlew
+      - gradlew.bat
+      - app/build.gradle.kts
+      - app/src/main/AndroidManifest.xml
+      - app/src/main/java/org/hearth/circuits/.gitkeep
+      - .gitignore
+      - LICENSE
+      - README.md
+
+    test_first:
+      - kind: scripted
+        cases:
+          - name: gradle_wrapper_runs
+            assert_command: ./gradlew --version
+            assert_exit: 0
+          - name: assemble_debug_succeeds
+            assert_command: ./gradlew :app:assembleDebug --no-daemon
+            assert_exit: 0
+          - name: agp_pinned_in_catalog
+            assert_command: |
+              grep -E '^agp = "8\.7\.[0-9]+"' gradle/libs.versions.toml
+            assert_exit: 0
+          - name: kotlin_pinned_in_catalog
+            assert_command: |
+              grep -E '^kotlin = "2\.1\.[0-9]+"' gradle/libs.versions.toml
+            assert_exit: 0
+          - name: gradle_wrapper_pinned
+            assert_command: |
+              grep 'distributionUrl=https\\://services.gradle.org/distributions/gradle-' gradle/wrapper/gradle-wrapper.properties
+            assert_exit: 0
+          - name: license_is_gpl3
+            assert_command: head -1 LICENSE
+            assert_contains: GNU GENERAL PUBLIC LICENSE
+
+    work:
+      - |
+        Initialize Gradle wrapper at a pinned version (Gradle 8.10+).
+        Commit gradlew, gradlew.bat, gradle/wrapper/gradle-wrapper.jar,
+        gradle/wrapper/gradle-wrapper.properties.
+      - |
+        Create gradle/libs.versions.toml with pinned versions for agp,
+        kotlin, androidx.activity, androidx.webkit, androidx.core,
+        junit, robolectric, espresso.
+      - |
+        Create root build.gradle.kts and settings.gradle.kts using
+        version catalog.
+      - |
+        Create app/build.gradle.kts with applicationId
+        org.hearth.circuits, minSdk 26, targetSdk 35.
+      - |
+        Create minimal AndroidManifest.xml with no permissions and a
+        placeholder MainActivity stub. The actual MainActivity is
+        task B3.
+      - |
+        Create .gitignore covering /build, /.gradle, /local.properties,
+        /.idea, *.iml, /app/release.
+      - Add LICENSE (GPL-3.0 verbatim).
+      - |
+        Create a minimal README.md (not user-facing yet, packagers
+        will read it).
+
+    done_when:
+      - All scripted cases pass.
+      - |
+        `./gradlew :app:assembleDebug` produces a non-empty APK at
+        app/build/outputs/apk/debug/app-debug.apk.
+      - APK installs on an emulator and shows a blank activity without crashing.
+
+    taboos:
+      - Do NOT add the kotlin-android-extensions plugin (deprecated).
+      - "Do NOT enable Compose — buildFeatures { compose = true }."
+      - |
+        Do NOT add org.jetbrains.kotlin.kapt unless absolutely required
+        by a future task — and even then, prefer KSP.
+      - |
+        Do NOT add a wrapper distribution URL pointing at a fork or
+        third-party mirror.
+      - Do NOT include local.properties in version control.
+      - Do NOT add android.useAndroidX=false. Must be true.
+
+  - id: B2
+    title: Hardened AndroidManifest — no INTERNET, no network state, locale
+    intent: |
+      Make the absence of network capabilities a build-time invariant,
+      not a polite request. Lint must fail any change that adds network
+      permissions.
+    estimated_complexity: S
+    dependencies: [B1]
+    files_in:
+      - app/src/main/AndroidManifest.xml
+    files_out_new:
+      - app/src/test/java/org/hearth/circuits/ManifestTest.kt
+      - lint-checks/src/main/java/org/hearth/circuits/lint/NoNetworkPermissionDetector.kt
+      - lint-checks/build.gradle.kts
+    files_out_modified:
+      - app/src/main/AndroidManifest.xml
+      - app/build.gradle.kts
+      - settings.gradle.kts
+
+    test_first:
+      - kind: junit-robolectric
+        file: app/src/test/java/org/hearth/circuits/ManifestTest.kt
+        cases:
+          - name: no_internet_permission
+            asserts: |
+              Robolectric loads the merged manifest; assert
+              packageInfo.requestedPermissions does NOT contain
+              android.permission.INTERNET nor
+              android.permission.ACCESS_NETWORK_STATE nor
+              android.permission.ACCESS_WIFI_STATE.
+          - name: cleartext_traffic_disabled
+            asserts: |
+              applicationInfo.flags has FLAG_USES_CLEARTEXT_TRAFFIC = 0
+              AND android:usesCleartextTraffic="false" in manifest.
+          - name: backup_disabled
+            asserts: android:allowBackup="false".
+          - name: launcher_intent_filter
+            asserts: |
+              MainActivity has intent-filter with MAIN action and
+              LAUNCHER category exactly once.
+      - kind: lint
+        cases:
+          - name: custom_lint_rule_blocks_internet
+            asserts: |
+              Add android.permission.INTERNET to the manifest in a
+              throwaway branch, run `./gradlew :app:lintDebug`, expect
+              exit code != 0 with our custom error id
+              NoInternetAllowed.
+            assert_exit: nonzero
+
+    work:
+      - |
+        Add a separate Gradle module `lint-checks` containing a
+        custom Android Lint rule (Detector + Issue) that errors if
+        AndroidManifest declares any of INTERNET, ACCESS_NETWORK_STATE,
+        ACCESS_WIFI_STATE, CHANGE_NETWORK_STATE, CHANGE_WIFI_STATE.
+      - |
+        Wire `:app` to depend on `:lint-checks` via the lintChecks
+        configuration.
+      - |
+        Update app manifest — android:allowBackup="false";
+        android:usesCleartextTraffic="false";
+        android:hasFragileUserData="false"; application label =
+        @string/app_name; supportsRtl="true"; theme = a vanilla
+        Material 3 theme defined in res/values/themes.xml.
+      - |
+        Add the launcher MainActivity with MAIN / LAUNCHER intent
+        filter — implementation in B3, but the manifest entry is
+        here.
+
+    done_when:
+      - All JUnit / Robolectric tests green.
+      - Custom lint rule fires correctly when INTERNET is added.
+      - |
+        `./gradlew :app:lintDebug` exits 0 with the rule passive — no
+        forbidden permissions present.
+      - Manifest does not declare any <uses-permission> tags.
+
+    taboos:
+      - |
+        Do NOT add a runtime permission framework — no
+        accompanist-permissions, no easy-permissions.
+      - |
+        Do NOT add android.permission.READ_EXTERNAL_STORAGE for
+        "saving bookmarks". Bookmarks live in WebView localStorage.
+      - Do NOT request POST_NOTIFICATIONS. We don't notify anything.
+      - Do NOT add foreground service permissions.
+
+  - id: B3
+    title: MainActivity — WebViewAssetLoader, no-network interceptor, back nav
+    intent: |
+      The actual app — a single Activity that hosts a WebView pointed
+      at bundled assets, blocks any non-file request, and handles
+      back navigation through web history.
+    estimated_complexity: M
+    dependencies: [B2, B4]
+    files_in:
+      - gradle/libs.versions.toml
+    files_out_new:
+      - app/src/main/java/org/hearth/circuits/MainActivity.kt
+      - app/src/main/res/layout/activity_main.xml
+      - app/src/main/res/values/themes.xml
+      - app/src/main/res/values/strings.xml
+      - app/src/test/java/org/hearth/circuits/MainActivityTest.kt
+      - app/src/androidTest/java/org/hearth/circuits/WebViewBehaviorTest.kt
+    files_out_modified:
+      - app/build.gradle.kts
+      - app/src/main/AndroidManifest.xml
+
+    test_first:
+      - kind: junit-robolectric
+        file: app/src/test/java/org/hearth/circuits/MainActivityTest.kt
+        cases:
+          - name: webview_loads_index
+            asserts: |
+              On activity create, the WebView is asked to load
+              https://appassets.androidplatform.net/assets/html/index.html
+              (the WebViewAssetLoader path).
+          - name: dom_storage_enabled
+            asserts: webView.settings.domStorageEnabled is true.
+          - name: javascript_enabled
+            asserts: webView.settings.javaScriptEnabled is true.
+          - name: file_access_disabled
+            asserts: |
+              webView.settings.allowFileAccess is false AND
+              allowFileAccessFromFileURLs is false AND
+              allowUniversalAccessFromFileURLs is false. We use
+              WebViewAssetLoader, which serves over a virtual https
+              origin; file access is unnecessary and risky.
+          - name: media_playback_no_user_gesture_required
+            asserts: |
+              mediaPlaybackRequiresUserGesture is true (default;
+              ensure not flipped).
+          - name: blocks_non_file_requests
+            asserts: |
+              shouldInterceptRequest returns an empty 403
+              WebResourceResponse for any request whose URL host is
+              not appassets.androidplatform.net.
+          - name: back_button_uses_web_history
+            asserts: |
+              When webView.canGoBack() is true, onBackPressed calls
+              webView.goBack(); when false, falls through to default
+              (finish activity).
+      - kind: instrumented-espresso
+        file: app/src/androidTest/java/org/hearth/circuits/WebViewBehaviorTest.kt
+        cases:
+          - name: launches_and_renders
+            asserts: |
+              After launching MainActivity, within 5 seconds the
+              WebView evaluates document.title and returns
+              "Open Circuits" or the actual root title from the
+              bundled index.html.
+          - name: navigation_link_works
+            asserts: |
+              evaluateJavascript runs the click on a link to DC_1;
+              within 3 seconds the URL ends with DC_1.html.
+          - name: localstorage_persists_across_restart
+            asserts: |
+              Set localStorage["oc:test"] = "v1"; close activity;
+              relaunch; evaluate localStorage["oc:test"]; expect "v1".
+
+    work:
+      - Add androidx.webkit (current stable) to the version catalog and app deps.
+      - |
+        Implement MainActivity in Kotlin — inflate activity_main.xml
+        (single FrameLayout with WebView); construct
+        WebViewAssetLoader with PathHandler for /assets/; set a
+        WebViewClient that delegates same-origin
+        (appassets.androidplatform.net) requests to the asset loader
+        and returns a 403 empty body for any other host; configure
+        WebSettings as the test_first cases assert; override
+        onBackPressed to use webView.goBack() while history is
+        non-empty; save and restore WebView state in
+        onSaveInstanceState / onRestoreInstanceState so rotation
+        doesn't reset.
+      - |
+        res/values/themes.xml — Material3 light theme + DayNight
+        variant. No Compose theme.
+      - res/values/strings.xml — app_name only.
+
+    done_when:
+      - All Robolectric tests green.
+      - All Espresso tests green on a Pixel 6 API 35 emulator with airplane mode ON.
+      - |
+        Manual — install on a real device, enable airplane mode,
+        launch app. Full site browses, search works, settings
+        persist. Cycle airplane off and on, no behavior change.
+      - |
+        `./gradlew :app:assembleFossDebug` APK is installable on
+        Android 8.0 (API 26).
+
+    taboos:
+      - Do NOT use loadDataWithBaseURL. Use WebViewAssetLoader.
+      - |
+        Do NOT enable setAllowFileAccess(true) to "make things
+        easier". The asset loader already covers the use case.
+      - |
+        Do NOT add a JavaScriptInterface. None is needed; localStorage
+        + the bundled JS suffices.
+      - |
+        Do NOT add a WebChromeClient that overrides geolocation,
+        camera, mic, or notification permissions. Bundled content
+        doesn't request them; if it does, that's a bug in the
+        content, not something to paper over.
+      - |
+        Do NOT call WebView.setWebContentsDebuggingEnabled(true) in
+        release builds.
+      - Do NOT add a pull-to-refresh widget. There's nothing to refresh.
+      - |
+        Do NOT add zoom controls — setBuiltInZoomControls(false) is
+        the default and stays the default; pinch zoom from the
+        platform is fine.
+
+  - id: B4
+    title: Content sync script + assets folder bootstrap
+    intent: |
+      Pull a tagged open-circuits release tarball, verify SHA256, and
+      extract into app/src/main/assets/html/. Run by maintainers
+      before tagging a mobile release; output is committed so F-Droid
+      can build hermetically.
+    estimated_complexity: S
+    dependencies: [B1]
+    files_out_new:
+      - scripts/sync_content.sh
+      - scripts/sync_content.sha256
+      - app/src/main/assets/.gitkeep
+      - tests/test_sync_content.sh
+
+    test_first:
+      - kind: scripted
+        cases:
+          - name: script_executable
+            assert_command: test -x scripts/sync_content.sh
+            assert_exit: 0
+          - name: script_rejects_unknown_tag
+            assert_command: ./scripts/sync_content.sh v0.0.0-doesnotexist
+            assert_exit: nonzero
+          - name: script_verifies_sha256
+            assert_command: |
+              OC_LOCAL_TARBALL=/tmp/fake.tar.gz ./scripts/sync_content.sh test
+            assert_contains: SHA256 mismatch
+          - name: extraction_target_correct
+            asserts: |
+              After a successful run with a real tarball, the path
+              app/src/main/assets/html/index.html exists.
+          - name: tarball_strips_top_level
+            asserts: |
+              app/src/main/assets/html/DC/DC_1.html exists — tarball
+              top-level dir is stripped on extract.
+
+    work:
+      - |
+        scripts/sync_content.sh — bash with set -euo pipefail; arg 1
+        is open-circuits tag (e.g. v0.4.0); arg 2 optional
+        ("android" | "ios" | "both", default both); download tarball
+        from the open-circuits releases page using curl --fail
+        --location --no-progress-meter; verify sha256 against
+        scripts/sync_content.sha256 (a file with `<sha>  <tag>`
+        lines, picking the matching tag); support OC_LOCAL_TARBALL
+        env var to skip download; clean app/src/main/assets/html/
+        before extracting; extract with `tar --strip-components=1
+        -C app/src/main/assets/html/`.
+      - Update scripts/sync_content.sha256 with the initial pinned tag.
+      - Document in repo README how to bump content version.
+
+    done_when:
+      - All scripted tests green.
+      - |
+        After running `./scripts/sync_content.sh <real-tag>`,
+        app/src/main/assets/html/index.html and at least one chapter
+        per volume are present.
+      - |
+        Tampering with the tarball causes the script to abort with a
+        non-zero exit and the message "SHA256 mismatch".
+
+    taboos:
+      - |
+        Do NOT vendor the content tarball into the repo as an LFS
+        file. Either commit the extracted tree (preferred — F-Droid
+        friendly) or fetch + verify in-place. Don't do both.
+      - |
+        Do NOT call out to npm, pip, or any package manager from the
+        sync script. Pure bash + curl + tar + sha256sum.
+      - |
+        Do NOT make the script interactive — no prompts, no `read`.
+        It runs in CI.
+      - |
+        Do NOT support arbitrary URLs. Tag-based downloads from the
+        official open-circuits release page only.
+      - |
+        Do NOT silently extract without integrity check, even with a
+        --no-verify flag. Verification is mandatory.
+
+  - id: B5
+    title: Adaptive launcher icons, splash, theme colors
+    intent: |
+      Brand the app properly for home screens and the Android 12+
+      splash. Reuse icons from open-circuits A4, plus generate
+      Android-specific adaptive icon layers.
+    estimated_complexity: S
+    dependencies: [B1]
+    files_in:
+      - upstream open-circuits overlay/icons/icon-512.png
+      - upstream open-circuits overlay/logo.svg
+    files_out_new:
+      - app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+      - app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+      - app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png
+      - app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png
+      - app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png
+      - app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png
+      - app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
+      - app/src/main/res/values/colors.xml
+      - app/src/main/res/values-night/colors.xml
+      - app/src/main/res/drawable/ic_launcher_background.xml
+      - app/src/test/java/org/hearth/circuits/ThemeTest.kt
+    files_out_modified:
+      - app/src/main/res/values/themes.xml
+
+    test_first:
+      - kind: junit-robolectric
+        cases:
+          - name: launcher_icon_present_at_all_densities
+            asserts: |
+              For each density {mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi},
+              R.mipmap.ic_launcher_foreground resolves to a non-null
+              Drawable.
+          - name: adaptive_icon_xml_correct
+            asserts: |
+              ic_launcher.xml has <adaptive-icon> with both <background>
+              and <foreground>.
+          - name: brand_colors_match_overlay
+            asserts: |
+              colors.xml defines @color/brand_copper and
+              @color/brand_cream with hex values matching the OKLCH
+              values from open-circuits overlay/css/open-circuits.css
+              (precomputed and committed).
+          - name: night_colors_present
+            asserts: |
+              values-night/colors.xml exists and overrides at least
+              the background.
+          - name: splash_theme_uses_brand
+            asserts: |
+              themes.xml defines a Theme.OpenCircuits.Splash extending
+              Theme.SplashScreen with windowSplashScreenBackground =
+              @color/brand_cream and windowSplashScreenAnimatedIcon =
+              @drawable/ic_launcher_foreground.
+
+    work:
+      - |
+        Convert overlay/logo.svg into ic_launcher_foreground.png at 5
+        densities (sizes per Material guidance — 108dp content area
+        inside 108x108) and ic_launcher_background.xml as a solid
+        color drawable (brand_cream). Use a documented command —
+        ImageMagick or rsvg-convert — and commit the command in
+        app/src/main/res/icons/README so regen is reproducible.
+      - |
+        Wire androidx.core:core-splashscreen and use it from
+        MainActivity.onCreate — `installSplashScreen()` BEFORE
+        super.onCreate.
+      - |
+        Define brand_copper and brand_cream as sRGB hex values
+        derived from the OKLCH tokens in
+        overlay/css/open-circuits.css; document the conversion in
+        comments inside colors.xml.
+      - Theme.OpenCircuits extends Theme.Material3.DayNight.NoActionBar.
+
+    done_when:
+      - All Robolectric tests green.
+      - |
+        Launcher icon visible on Pixel 6 home screen at default
+        density and Settings -> Display -> Display size: largest.
+      - |
+        Splash screen flashes brand_cream + copper logo for ~500ms
+        then transitions to WebView.
+      - |
+        Dark mode (system setting) shows night-variant background for
+        the splash.
+
+    taboos:
+      - |
+        Do NOT use Image Asset Studio's default Android logo. Use the
+        project's own icon.
+      - Do NOT add a third-party Lottie animation as the splash icon.
+      - Do NOT install androidx.compose just for the splash.
+      - |
+        Do NOT add multiple round / non-round PNG variants beyond
+        what the adaptive-icon system needs.
+
+  - id: B6
+    title: Build flavors (play, foss) + signing config
+    intent: |
+      Two flavors, one source tree. play emits AAB for Play Console;
+      foss emits APK for F-Droid / IzzyOnDroid / GitHub Releases.
+      Source code is identical between flavors.
+    estimated_complexity: S
+    dependencies: [B3]
+    files_in:
+      - app/build.gradle.kts
+    files_out_new:
+      - keystore.example.properties
+      - app/src/test/java/org/hearth/circuits/FlavorParityTest.kt
+    files_out_modified:
+      - app/build.gradle.kts
+      - .gitignore
+
+    test_first:
+      - kind: scripted
+        cases:
+          - name: assemble_play_release_succeeds
+            assert_command: ./gradlew :app:bundlePlayRelease
+            assert_exit: 0
+          - name: assemble_foss_release_succeeds
+            assert_command: ./gradlew :app:assembleFossRelease
+            assert_exit: 0
+          - name: foss_apk_no_gms
+            assert_command: |
+              unzip -l app/build/outputs/apk/foss/release/app-foss-release.apk \
+                | grep -E '(google/android/gms|firebase)'
+            assert_exit: 1
+          - name: play_aab_no_gms
+            assert_command: |
+              unzip -l app/build/outputs/bundle/playRelease/app-play-release.aab \
+                | grep -E '(google/android/gms|firebase)'
+            assert_exit: 1
+      - kind: junit
+        file: app/src/test/java/org/hearth/circuits/FlavorParityTest.kt
+        cases:
+          - name: identical_class_files
+            asserts: |
+              Disassemble both flavors' classes.dex (or merged dex);
+              after stripping BuildConfig.* and version metadata,
+              SHA256 of the class lists match.
+
+    work:
+      - |
+        In app/build.gradle.kts — flavorDimensions += "distribution";
+        productFlavors play and foss with no source-level differences,
+        only metadata.
+      - |
+        signingConfigs.release reads keystorePath, keystorePassword,
+        keyAlias, keyPassword from keystore.properties (gitignored).
+        If the file is absent, fall back to debug signing so CI
+        without secrets still builds.
+      - keystore.example.properties documents required keys; commit this template.
+      - |
+        Add a custom Gradle task `:app:assertNoGms` that fails if the
+        merged classpath contains com.google.android.gms.* or
+        com.google.firebase.*; bind it to `check` lifecycle.
+
+    done_when:
+      - Both flavors assemble.
+      - assertNoGms task green.
+      - FlavorParityTest green.
+      - |
+        Manual — both APKs share the same applicationId
+        (org.hearth.circuits) so only one can be installed at a time.
+        Intentional — Play and F-Droid users will use their store of
+        choice.
+
+    taboos:
+      - |
+        Do NOT introduce flavor-specific source folders
+        (app/src/play/java, app/src/foss/java) for differing logic.
+        Flavors differ only in metadata.
+      - |
+        Do NOT applicationIdSuffix the foss build to dodge collisions.
+        Single applicationId; users pick a store.
+      - |
+        Do NOT commit a real signing key, keystore.properties, or
+        any password.
+      - |
+        Do NOT enable R8 / ProGuard with full mode
+        (-allowaccessmodification, aggressive class renaming) in v1.
+        Use the default proguard-android-optimize.txt only.
+
+  - id: B7
+    title: Reproducible build verification
+    intent: |
+      Ensure two clean builds of the same source produce the same APK
+      bytes (modulo signing). Required for F-Droid inclusion.
+    estimated_complexity: S
+    dependencies: [B6]
+    files_out_new:
+      - scripts/verify_reproducible.sh
+      - .github/workflows/reproducible.yml
+
+    test_first:
+      - kind: scripted
+        cases:
+          - name: two_clean_builds_match
+            assert_command: ./scripts/verify_reproducible.sh
+            assert_exit: 0
+          - name: workflow_runs_on_pr
+            asserts: |
+              .github/workflows/reproducible.yml has on pull_request
+              and a job named verify-reproducible.
+
+    work:
+      - |
+        scripts/verify_reproducible.sh — clean build #1 saves
+        app-foss-release-unsigned.apk to /tmp/build-a.apk; clean
+        build #2 (different tmpdir, fresh gradle home) saves
+        /tmp/build-b.apk; compare unsigned APK contents via
+        apkanalyzer or unzip -lv; any difference fails.
+      - |
+        In app/build.gradle.kts — disable BuildConfig timestamp
+        embedding; configure AbstractArchiveTask with
+        isPreserveFileTimestamps = false and
+        isReproducibleFileOrder = true.
+      - |
+        Workflow runs on PR + on main; uses a matrix of runners
+        (ubuntu-latest x 2 builds, separate steps).
+
+    done_when:
+      - Two clean builds produce byte-identical unsigned APKs.
+      - CI workflow green.
+      - |
+        F-Droid `fdroid build --reproducible` would succeed (verify
+        manually before opening fdroiddata PR).
+
+    taboos:
+      - Do NOT add a build timestamp to BuildConfig or resources.
+      - |
+        Do NOT depend on the system locale or timezone in any
+        generated string resource.
+      - |
+        Do NOT use Gradle properties that aren't in version control —
+        e.g. reading USER env var into resources.
+      - |
+        Do NOT enable android.enableR8.fullMode=true if it breaks
+        reproducibility on a given AGP version.
+
+  - id: B8
+    title: Fastlane metadata for Play + F-Droid
+    intent: |
+      Store-listing copy lives in version control so updates ship via
+      PR review, not console-clicks. Same source feeds Play (via
+      fastlane upload action) and F-Droid (which scans this layout
+      automatically).
+    estimated_complexity: S
+    dependencies: [B5]
+    files_out_new:
+      - fastlane/metadata/android/en-US/title.txt
+      - fastlane/metadata/android/en-US/short_description.txt
+      - fastlane/metadata/android/en-US/full_description.txt
+      - fastlane/metadata/android/en-US/changelogs/1.txt
+      - fastlane/metadata/android/en-US/images/icon.png
+      - fastlane/metadata/android/en-US/images/featureGraphic.png
+      - fastlane/metadata/android/en-US/images/phoneScreenshots/1.png
+      - fastlane/metadata/android/en-US/images/phoneScreenshots/2.png
+      - fastlane/metadata/android/en-US/images/phoneScreenshots/3.png
+      - fastlane/metadata/android/en-US/images/phoneScreenshots/4.png
+      - fastlane/Appfile
+      - fastlane/Fastfile
+      - tests/test_fastlane_metadata.sh
+
+    test_first:
+      - kind: scripted
+        cases:
+          - name: title_length
+            assert_command: |
+              [ "$(wc -c < fastlane/metadata/android/en-US/title.txt)" -le 31 ]
+            assert_exit: 0
+          - name: short_desc_length
+            assert_command: |
+              [ "$(wc -c < fastlane/metadata/android/en-US/short_description.txt)" -le 81 ]
+            assert_exit: 0
+          - name: full_desc_length
+            assert_command: |
+              [ "$(wc -c < fastlane/metadata/android/en-US/full_description.txt)" -le 4001 ]
+            assert_exit: 0
+          - name: changelog_length
+            assert_command: |
+              for f in fastlane/metadata/android/en-US/changelogs/*.txt; do
+                [ "$(wc -c < "$f")" -le 501 ] || exit 1
+              done
+            assert_exit: 0
+          - name: feature_graphic_dims
+            assert_command: |
+              identify -format "%wx%h" \
+                fastlane/metadata/android/en-US/images/featureGraphic.png
+            assert_contains: 1024x500
+          - name: at_least_two_screenshots
+            assert_command: |
+              [ "$(ls fastlane/metadata/android/en-US/images/phoneScreenshots/*.png 2>/dev/null | wc -l)" -ge 2 ]
+            assert_exit: 0
+          - name: no_emoji_in_metadata
+            assert_command: |
+              ! grep -Pr '[\x{1F300}-\x{1FAFF}]' fastlane/metadata/
+            assert_exit: 0
+
+    work:
+      - |
+        Write the three description files. Tone — tactile, generous,
+        honest, per CLAUDE.md.
+      - |
+        Capture phone screenshots on a Pixel 6 emulator — home, a
+        chapter mid-scroll, search results, settings popover open.
+      - |
+        Render featureGraphic.png at 1024x500 — project logo +
+        tagline, no marketing chrome.
+      - |
+        Document screenshot capture in a fastlane/README so they're
+        regenerable.
+
+    done_when:
+      - All scripted tests green.
+      - |
+        fastlane/Fastfile defines a `playstore` lane that uploads an
+        AAB via the supply action and a `apk_release` lane that
+        attaches APK to a GitHub Release.
+      - |
+        F-Droid metadata layout lints clean against `fdroid lint` —
+        run locally before opening fdroiddata PR.
+
+    taboos:
+      - |
+        Do NOT include emoji, marketing slogans, or capitalized
+        keyword stuffing in titles / descriptions.
+      - |
+        Do NOT include screenshots that show personal data, browser
+        URLs, or third-party content.
+      - Do NOT include the word "free" in title (Play policy ambiguity).
+      - |
+        Do NOT version-bump changelogs/N.txt to match an unreleased
+        version code.
+      - Do NOT add localized metadata (en-GB, fr-FR, etc.) in v1.
+
+  - id: B9
+    title: CI — build workflow on every PR
+    intent: |
+      Catch regressions before merge — assemble both flavors, run
+      unit + lint + reproducible-build checks.
+    estimated_complexity: S
+    dependencies: [B6]
+    files_out_new:
+      - .github/workflows/build.yml
+
+    test_first:
+      - kind: yaml-syntax
+        cases:
+          - name: workflow_parses
+            assert_command: |
+              python -c "import yaml; yaml.safe_load(open('.github/workflows/build.yml'))"
+            assert_exit: 0
+          - name: triggers_on_pr_and_push
+            asserts: |
+              workflow `on:` includes both pull_request and push (to main).
+          - name: caches_gradle
+            asserts: |
+              Workflow uses actions/cache or actions/setup-java's
+              built-in cache for gradle.
+          - name: runs_lint_and_test_and_assemble
+            asserts: |
+              Workflow has steps invoking :app:lintFossRelease,
+              :app:testFossReleaseUnitTest, and
+              :app:assembleFossRelease and the corresponding play
+              variants.
+
+    work:
+      - |
+        .github/workflows/build.yml — runs-on ubuntu-latest;
+        setup-java@v4 with distribution temurin and java-version 21;
+        rely on actions runner's preinstalled Android SDK; cache
+        gradle and android sdk; run lint, test, assemble for both
+        flavors; upload APKs as artifacts (retention 14 days).
+
+    done_when:
+      - YAML parses.
+      - First CI run on a PR is green end-to-end.
+      - Artifacts downloadable from the run page.
+
+    taboos:
+      - Do NOT use a self-hosted runner.
+      - Do NOT install Android SDK from a third-party action mirror.
+      - Do NOT skip lint with -Plint.abortOnError=false.
+      - Do NOT cache build/ outputs (only gradle and SDK).
+
+  - id: B10
+    title: CI — release workflow on tag (Play upload + GitHub APK)
+    intent: |
+      Tagging v1.0.0 builds, signs, uploads to Play internal track,
+      and attaches the foss APK to the GitHub Release.
+    estimated_complexity: M
+    dependencies: [B6, B8, B9]
+    files_out_new:
+      - .github/workflows/release.yml
+      - .github/RELEASE_CHECKLIST.md
+
+    test_first:
+      - kind: yaml-syntax
+        cases:
+          - name: release_workflow_parses
+            assert_command: |
+              python -c "import yaml; yaml.safe_load(open('.github/workflows/release.yml'))"
+            assert_exit: 0
+          - name: triggers_only_on_tag
+            asserts: |
+              `on:` is push tags ['v*'] ONLY (no PR or branch
+              trigger).
+          - name: requires_secrets
+            asserts: |
+              Workflow references at least these secrets —
+              PLAY_SERVICE_ACCOUNT_JSON, KEYSTORE_BASE64,
+              KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD.
+          - name: uploads_to_play_internal_track
+            asserts: Uses r0adkll/upload-google-play with track internal.
+          - name: attaches_apk_to_release
+            asserts: |
+              Step uses softprops/action-gh-release with files
+              pointing at app-foss-release.apk.
+
+    work:
+      - |
+        .github/workflows/release.yml with two jobs — first
+        build-and-sign assembles bundle (play) + apk (foss), signs
+        with key from base64-decoded secret; second publish uploads
+        AAB to Play internal track, attaches APK to GitHub Release,
+        generates sha256 checksum file and attaches.
+      - |
+        RELEASE_CHECKLIST.md — pre-flight items: content tarball
+        synced, version bumped in build.gradle.kts, changelog
+        appended, screenshots updated if UI changed.
+
+    done_when:
+      - YAML parses.
+      - |
+        Dry-run on a v0.0.1-test tag in a fork — AAB lands on Play
+        internal, APK + sha256 attached to GH Release, no errors.
+
+    taboos:
+      - |
+        Do NOT push directly to production track. Internal only.
+        Manual promotion in Play Console.
+      - |
+        Do NOT commit secrets to the repo. All come from GitHub
+        Actions secrets.
+      - |
+        Do NOT use a base64-encoded keystore in plaintext in the
+        workflow file.
+      - Do NOT skip the sha256 checksum step.
+
+  - id: B11
+    title: F-Droid inclusion package + privacy policy
+    intent: |
+      Prepare the metadata file F-Droid expects in fdroiddata, plus a
+      privacy policy page (required by Play Data Safety form and good
+      manners).
+    estimated_complexity: S
+    dependencies: [B4, B6, B8]
+    files_out_new:
+      - fdroid/metadata/org.hearth.circuits.yml
+      - app/src/main/assets/html/privacy.html
+      - tests/test_fdroid_metadata.py
+
+    test_first:
+      - kind: pytest
+        file: tests/test_fdroid_metadata.py
+        cases:
+          - name: fdroid_yaml_parses
+            asserts: yaml.safe_load(open(...)) succeeds.
+          - name: license_field_correct
+            asserts: License = "GPL-3.0-only" or "GPL-3.0-or-later".
+          - name: source_code_link
+            asserts: SourceCode field points at this repo.
+          - name: builds_block_present
+            asserts: |
+              Builds list has at least one entry with versionName
+              matching latest tag, versionCode matching
+              app/build.gradle.kts, subdir "app", gradle ["foss"],
+              and prebuild containing the sync_content.sh invocation.
+          - name: anti_features_empty
+            asserts: AntiFeatures field is empty or absent.
+          - name: privacy_html_present
+            asserts: |
+              app/src/main/assets/html/privacy.html exists, is < 8 KB,
+              contains the strings "no data collected" and "no network
+              access" (case-insensitive).
+
+    work:
+      - |
+        Author fdroid/metadata/org.hearth.circuits.yml following
+        F-Droid's schema. Maintain it locally; on first inclusion,
+        copy verbatim into fdroiddata via a PR there.
+      - |
+        Author privacy.html as a single self-contained page styled to
+        match the bundled site — re-use overlay/css/open-circuits.css
+        if practical.
+      - |
+        Surface a "Privacy" link from the existing footer (already in
+        overlay/templates/footer.html in the upstream repo) — no
+        change needed there if privacy.html is bundled at site root.
+
+    done_when:
+      - All pytest cases green.
+      - |
+        Run `fdroid lint org.hearth.circuits.yml` locally — zero
+        warnings.
+      - Privacy page renders inside the app and via the website.
+
+    taboos:
+      - |
+        Do NOT include fingerprinting, advertising, third-party
+        sharing, or analytics language in privacy.html. The reality
+        is "we collect nothing" — say that and stop.
+      - |
+        Do NOT use Markdown for the privacy page — it lives inside
+        the WebView so it must be HTML.
+      - |
+        Do NOT add anti-features to the F-Droid metadata —
+        NonFreeNet, NonFreeDep, Tracking. If any of those would be
+        required, the implementation is wrong, not the metadata.
+      - |
+        Do NOT submit the fdroiddata PR until two reproducible builds
+        verify locally (B7).
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Verification — repo-wide, after all tasks merged
+# ──────────────────────────────────────────────────────────────────────────────
+verification:
+  commands:
+    - ./scripts/sync_content.sh <latest open-circuits tag>
+    - ./gradlew clean
+    - ./gradlew :app:lintFossRelease :app:testFossReleaseUnitTest :app:assembleFossRelease
+    - ./gradlew :app:bundlePlayRelease
+    - ./scripts/verify_reproducible.sh
+    - ./gradlew :app:assertNoGms
+  manual_checks:
+    - |
+      Install app-foss-release.apk on a physical device with airplane
+      mode ON. App launches, all six volumes browse, search works,
+      settings persist, bookmarks survive reboot.
+    - |
+      `adb shell dumpsys package org.hearth.circuits | grep -i
+      permission` — no INTERNET, no ACCESS_NETWORK_STATE.
+    - |
+      `apkanalyzer manifest print app-foss-release.apk` — confirm no
+      <uses-permission> tags at all.
+    - |
+      `unzip -l app-foss-release.apk | grep -i 'google\|firebase'` —
+      no hits beyond AndroidX, which lives under androidx/, not
+      com/google.
+    - "First-launch cold-start time on a Pixel 4a: < 2 seconds to first paint."
+    - "APK size: < 75 MB (48 MB content + 1-2 MB app + AndroidX)."
+    - F-Droid `fdroid lint` clean.
+  metrics:
+    - "Cold start to first WebView paint: < 2 s on Pixel 4a."
+    - "APK size: < 75 MB."
+    - |
+      APK lint warnings — 0 errors, < 5 warnings (none about
+      permissions, network, or proprietary deps).
+    - Reproducible build SHA256 stable across two clean runs.
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Hand-off notes for downstream models
+# ──────────────────────────────────────────────────────────────────────────────
+handoff_notes:
+  red_flags_to_pause_on:
+    - |
+      You reach for a Google or Firebase artifact. Stop. Whatever
+      you're trying to do, the answer is not Play Services.
+    - |
+      You want to add INTERNET permission "just for one feature".
+      Stop. That feature does not belong in this app.
+    - |
+      You want to add a Compose dependency. Stop. The app is a
+      WebView; XML themes suffice.
+    - |
+      You want to add a hybrid framework "to share code with iOS".
+      Stop. iOS is a separate Swift wrapper; sharing code is a
+      future-Capacitor decision, not a today decision.
+    - |
+      You're tempted to commit a signing key or keystore.properties.
+      Stop. Use GitHub Actions secrets only.
+  when_in_doubt:
+    - Re-read this file's guardrails section.
+    - |
+      Look at how androidx.webkit.WebViewAssetLoader is documented on
+      developer.android.com — that's the canonical pattern.
+    - |
+      Check the F-Droid Inclusion Policy
+      (f-droid.org/docs/Inclusion_Policy/) before adding any new
+      dependency.
+    - |
+      If the change crosses out of app/ into a new Gradle module,
+      it's probably too ambitious for this repo's purpose. Push back.
