@@ -5,7 +5,7 @@ ledger:
     Android app. Settings panel, bookmarks + last-read, in-app search,
     PWA manifest + icons.
   source_of_truth:
-    plan: /root/.claude/plans/what-work-would-it-serene-orbit.md
+    plan: docs/ledgers/mobile-app-plan.md
     spec: open-circuits-spec.md
     instructions: CLAUDE.md
   branch_strategy: one feature branch per task, PR into main, squash-merge

@@ -6,7 +6,7 @@ ledger:
     Releases. Strict offline. No Google Play Services. No tracking. No
     INTERNET permission.
   source_of_truth:
-    plan: /root/.claude/plans/what-work-would-it-serene-orbit.md
+    plan: docs/ledgers/mobile-app-plan.md  # lives in the open-circuits repo
     upstream_repo: open-circuits
   package_id: org.hearth.circuits
   app_name: Open Circuits
