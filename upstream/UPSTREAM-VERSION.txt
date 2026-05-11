@@ -2,6 +2,6 @@
 # Written by build/download_source.py — do not edit manually.
 
 SOURCE_URL=https://www.ibiblio.org/kuphaldt/electricCircuits/liechtml.tar.gz
-EXTRACTION_DATE=2026-05-10
+EXTRACTION_DATE=2026-05-11
 SOURCE=Git LFS
 TARBALL=liechtml.tar.gz
